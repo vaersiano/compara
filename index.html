@@ -280,7 +280,7 @@
         </div>
     </div>
 
-    <!-- Contenedor inferior con doble visor y selector histórico oficial en Pantalla 2 -->
+    <!-- Contenedor inferior con doble visor independiente y catálogo histórico seguro (HTTPS) -->
     <div id="mapComparaContainer" class="card">
         <h3>Comparador de Pantallas Independientes (Histórico IGN oficial)</h3>
         <p style="font-size: 0.9rem; color: #555;">La Pantalla 1 muestra la ortofoto actual y la Pantalla 2 incluye el catálogo completo de ortofotos históricas oficiales del IGN. Ambas muestran el recinto sobreimpresionado.</p>
@@ -298,7 +298,7 @@
                 <div id="mapLeft" class="map-pane"></div>
             </div>
 
-            <!-- Pantalla Derecha (Históricos oficiales IGN) -->
+            <!-- Pantalla Derecha (Históricos oficiales IGN con HTTPS) -->
             <div class="map-pane-card">
                 <div class="map-pane-header">
                     <label><strong>Pantalla 2 (Histórico):</strong></label>
@@ -648,6 +648,7 @@
         if (layerRight !== null) mapRight.removeLayer(layerRight);
 
         const seleccion = document.getElementById('selectCapa2').value;
+        // URL oficial asegurada con HTTPS para evitar bloqueos por contenido mixto en GitHub Pages
         let urlWMS = 'https://www.ign.es/wms/pnoa-historico';
 
         layerRight = L.tileLayer.wms(urlWMS, {
