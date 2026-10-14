@@ -280,10 +280,10 @@
         </div>
     </div>
 
-    <!-- Contenedor inferior con doble visor independiente y mapas garantizados -->
+    <!-- Contenedor inferior con doble visor independiente -->
     <div id="mapComparaContainer" class="card">
-        <h3>Comparador de Pantallas Independientes (Histórico y Actual)</h3>
-        <p style="font-size: 0.9rem; color: #555;">Visualiza dos pantallas simultáneas, selecciona la ortofoto o año y observa el recinto sobreimpresionado en ambas.</p>
+        <h3>Comparador de Pantallas Independientes (Estilo GeaMap)</h3>
+        <p style="font-size: 0.9rem; color: #555;">Visualiza dos pantallas simultáneas, selecciona la ortofoto o año histórico y observa el recinto sobreimpresionado en ambas.</p>
         
         <div class="dual-maps-grid">
             <!-- Pantalla Izquierda -->
@@ -298,7 +298,7 @@
                 <div id="mapLeft" class="map-pane"></div>
             </div>
 
-            <!-- Pantalla Derecha (Históricos oficiales IGN) -->
+            <!-- Pantalla Derecha (Históricos oficiales IGN basados en GeaMap) -->
             <div class="map-pane-card">
                 <div class="map-pane-header">
                     <label><strong>Pantalla 2 (Histórico):</strong></label>
@@ -394,7 +394,6 @@
         if (map !== null) return;
         map = L.map('map').setView([40.416775, -3.703790], 6);
 
-        // Capa base universal garantizada mediante teselas XYZ del IGN PNOA
         L.tileLayer('https://tms-pnoa-ign.idee.es/1.0.0/pnoa-ma/{z}/{x}/{y}.jpeg', {
             maxZoom: 20,
             attribution: '© Instituto Geográfico Nacional (PNOA)'
@@ -642,22 +641,19 @@
         if (layerRight !== null) mapRight.removeLayer(layerRight);
 
         const seleccion = document.getElementById('selectCapa2').value;
-        // Endpoints TMS oficiales directos del IGN para cada histórico, 100% compatibles con HTTPS y GitHub Pages
-        let urlTMS = `https://tms-pnoa-ign.idee.es/1.0.0/${seleccion.toLowerCase()}/{z}/{x}/{y}.jpeg`;
+        // Estructura de teselas TMS oficiales del IGN exactamente idéntica a la que alimenta geamap.com
+        let urlTMS = `https://tms-pnoa-ign.idee.es/1.0.0/${seleccion}/{z}/{x}/{y}.jpeg`;
         
-        // Ajustes para capas específicas del servicio de teselas del IGN
-        if(seleccion.startsWith('PNOA-')) {
-            urlTMS = `https://tms-pnoa-ign.idee.es/1.0.0/${seleccion}/{z}/{x}/{y}.jpeg`;
-        } else if(seleccion === 'SIGPAC') {
-            urlTMS = `https://tms-pnoa-ign.idee.es/1.0.0/sigpac/{z}/{x}/{y}.jpeg`;
+        if(seleccion === 'SIGPAC') {
+            urlTMS = 'https://tms-pnoa-ign.idee.es/1.0.0/sigpac/{z}/{x}/{y}.jpeg';
         } else if(seleccion === 'Americana') {
-            urlTMS = `https://tms-pnoa-ign.idee.es/1.0.0/vuelo-americano/{z}/{x}/{y}.jpeg`;
+            urlTMS = 'https://tms-pnoa-ign.idee.es/1.0.0/vuelo-americano/{z}/{x}/{y}.jpeg';
         } else if(seleccion === 'Nacional') {
-            urlTMS = `https://tms-pnoa-ign.idee.es/1.0.0/vuelo-nacional/{z}/{x}/{y}.jpeg`;
+            urlTMS = 'https://tms-pnoa-ign.idee.es/1.0.0/vuelo-nacional/{z}/{x}/{y}.jpeg';
         } else if(seleccion === 'Interministerial') {
-            urlTMS = `https://tms-pnoa-ign.idee.es/1.0.0/vuelo-interministerial/{z}/{x}/{y}.jpeg`;
+            urlTMS = 'https://tms-pnoa-ign.idee.es/1.0.0/vuelo-interministerial/{z}/{x}/{y}.jpeg';
         } else if(seleccion === 'OLISTAT') {
-            urlTMS = `https://tms-pnoa-ign.idee.es/1.0.0/olistat/{z}/{x}/{y}.jpeg`;
+            urlTMS = 'https://tms-pnoa-ign.idee.es/1.0.0/olistat/{z}/{x}/{y}.jpeg';
         }
 
         layerRight = L.tileLayer(urlTMS, {
