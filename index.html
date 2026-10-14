@@ -648,7 +648,6 @@
         if (layerRight !== null) mapRight.removeLayer(layerRight);
 
         const seleccion = document.getElementById('selectCapa2').value;
-        // URL oficial asegurada con HTTPS para evitar bloqueos por contenido mixto en GitHub Pages
         let urlWMS = 'https://www.ign.es/wms/pnoa-historico';
 
         layerRight = L.tileLayer.wms(urlWMS, {
