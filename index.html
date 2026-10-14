@@ -282,7 +282,7 @@
 
     <!-- Contenedor inferior con doble visor independiente -->
     <div id="mapComparaContainer" class="card">
-        <h3>Comparador de Pantallas Independientes (Estilo GeaMap)</h3>
+        <h3>Comparador de Pantallas Independientes</h3>
         <p style="font-size: 0.9rem; color: #555;">Visualiza dos pantallas simultáneas, selecciona la ortofoto o año histórico y observa el recinto sobreimpresionado en ambas.</p>
         
         <div class="dual-maps-grid">
@@ -298,7 +298,7 @@
                 <div id="mapLeft" class="map-pane"></div>
             </div>
 
-            <!-- Pantalla Derecha (Históricos oficiales IGN basados en GeaMap) -->
+            <!-- Pantalla Derecha (Históricos oficiales IGN) -->
             <div class="map-pane-card">
                 <div class="map-pane-header">
                     <label><strong>Pantalla 2 (Histórico):</strong></label>
@@ -641,7 +641,8 @@
         if (layerRight !== null) mapRight.removeLayer(layerRight);
 
         const seleccion = document.getElementById('selectCapa2').value;
-        // Estructura de teselas TMS oficiales del IGN exactamente idéntica a la que alimenta geamap.com
+        
+        // URLs exactas del servicio TMS oficial del IDEE (idéntico al que alimenta geamap.com)
         let urlTMS = `https://tms-pnoa-ign.idee.es/1.0.0/${seleccion}/{z}/{x}/{y}.jpeg`;
         
         if(seleccion === 'SIGPAC') {
