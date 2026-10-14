@@ -280,7 +280,7 @@
         </div>
     </div>
 
-    <!-- Contenedor inferior con doble visor independiente y teselas XYZ optimizadas -->
+    <!-- Contenedor inferior con doble visor independiente y teselas WMTS oficiales -->
     <div id="mapComparaContainer" class="card">
         <h3>Comparador de Pantallas Independientes (Histórico IGN oficial)</h3>
         <p style="font-size: 0.9rem; color: #555;">La Pantalla 1 muestra la ortofoto actual y la Pantalla 2 incluye el catálogo completo de ortofotos históricas oficiales del IGN. Ambas muestran el recinto sobreimpresionado.</p>
@@ -394,7 +394,7 @@
         if (map !== null) return;
         map = L.map('map').setView([40.416775, -3.703790], 6);
 
-        // Usar WMTS estándar del IGN para garantizar carga perfecta en GitHub Pages
+        // Teselas WMTS estándar oficiales del IGN (PNOA Actual)
         L.tileLayer('https://www.ign.es/wmts/pnoa-ma?layer=OI.OrthoimageCoverage&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}', {
             maxZoom: 20,
             attribution: '© Instituto Geográfico Nacional (PNOA)'
@@ -642,7 +642,7 @@
         if (layerRight !== null) mapRight.removeLayer(layerRight);
 
         const seleccion = document.getElementById('selectCapa2').value;
-        // Uso de teselas WMTS oficiales del IGN Histórico optimizadas para HTTPS
+        // Petición WMTS de teselas históricas oficiales del IGN compatible con HTTPS y GitHub Pages
         let urlWMTS = `https://www.ign.es/wmts/pnoa-historico?layer=${seleccion}&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}`;
 
         layerRight = L.tileLayer(urlWMTS, {
