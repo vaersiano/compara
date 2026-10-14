@@ -257,17 +257,6 @@
 
     <div id="resultsContainer" class="result-layout" style="display: none;">
         <div class="card">
-            <h3>Geolocalización y Contorno del Recinto</h3>
-            <div id="map"></div>
-            
-            <div class="action-buttons-grid">
-                <button type="button" id="btnSalidaGrafica" class="btn-sigpac">Generar Salida Gráfica SIGPAC</button>
-                <button type="button" id="btnGoogleMaps" class="btn-google">Ver posición en Google Maps</button>
-                <button type="button" id="btnCompara" class="btn-compara">COMPARA</button>
-            </div>
-        </div>
-
-        <div class="card">
             <h3>Datos Alfanuméricos Combinados</h3>
             <div class="table-responsive">
                 <table id="datosTabla">
@@ -278,12 +267,23 @@
                 </table>
             </div>
         </div>
+
+        <div class="card">
+            <h3>Geolocalización (Google Satélite + Contorno)</h3>
+            <div id="map"></div>
+            
+            <div class="action-buttons-grid">
+                <button type="button" id="btnSalidaGrafica" class="btn-sigpac">Generar Salida Gráfica SIGPAC</button>
+                <button type="button" id="btnGoogleMaps" class="btn-google">Ver posición en Google Maps</button>
+                <button type="button" id="btnCompara" class="btn-compara">COMPARA</button>
+            </div>
+        </div>
     </div>
 
-    <!-- Contenedor inferior con doble visor independiente -->
+    <!-- Contenedor inferior con doble visor y opciones alternativas / Google Satélite -->
     <div id="mapComparaContainer" class="card">
         <h3>Comparador de Pantallas Independientes</h3>
-        <p style="font-size: 0.9rem; color: #555;">Visualiza dos pantallas simultáneas, selecciona la capa o año histórico y observa el recinto sobreimpresionado en ambas.</p>
+        <p style="font-size: 0.9rem; color: #555;">Compara vistas de satélite, callejero de alta compatibilidad y mapas base fluidos. Ambas muestran el recinto sobreimpresionado.</p>
         
         <div class="dual-maps-grid">
             <!-- Pantalla Izquierda -->
@@ -291,40 +291,25 @@
                 <div class="map-pane-header">
                     <label><strong>Pantalla 1:</strong></label>
                     <select id="selectCapa1" onchange="cambiarCapaIzquierda()">
-                        <option value="pnoa-ma">Ortofoto PNOA Actual</option>
-                        <option value="osm">Mapa Base Estándar (OSM)</option>
+                        <option value="google_sat">Google Satélite</option>
+                        <option value="google_hybrid">Google Híbrido</option>
+                        <option value="esri_sat">Esri World Imagery</option>
+                        <option value="osm">OpenStreetMap</option>
                     </select>
                 </div>
                 <div id="mapLeft" class="map-pane"></div>
             </div>
 
-            <!-- Pantalla Derecha (Históricos oficiales IGN) -->
+            <!-- Pantalla Derecha -->
             <div class="map-pane-card">
                 <div class="map-pane-header">
-                    <label><strong>Pantalla 2 (Histórico):</strong></label>
+                    <label><strong>Pantalla 2:</strong></label>
                     <select id="selectCapa2" onchange="cambiarCapaDerecha()">
-                        <option value="PNOA-2022">PNOA 2022</option>
-                        <option value="PNOA-2021">PNOA 2021</option>
-                        <option value="PNOA-2020">PNOA 2020</option>
-                        <option value="PNOA-2019">PNOA 2019</option>
-                        <option value="PNOA-2018">PNOA 2018</option>
-                        <option value="PNOA-2017">PNOA 2017</option>
-                        <option value="PNOA-2016">PNOA 2016</option>
-                        <option value="PNOA-2015">PNOA 2015</option>
-                        <option value="PNOA-2014">PNOA 2014</option>
-                        <option value="PNOA-2013">PNOA 2013</option>
-                        <option value="PNOA-2012">PNOA 2012</option>
-                        <option value="PNOA-2011">PNOA 2011</option>
-                        <option value="PNOA-2010">PNOA 2010</option>
-                        <option value="PNOA-2009">PNOA 2009</option>
-                        <option value="PNOA-2008">PNOA 2008</option>
-                        <option value="PNOA-2006-2007" selected>PNOA 2006-2007</option>
-                        <option value="PNOA-2004-2005">PNOA 2004-2005</option>
-                        <option value="SIGPAC">Vuelo SIGPAC (1997-2003)</option>
-                        <option value="OLISTAT">Vuelo OLISTAT (1997-1998)</option>
-                        <option value="Nacional">Vuelo Nacional (1980-1986)</option>
-                        <option value="Interministerial">Vuelo Interministerial (1973-1986)</option>
-                        <option value="Americana">Vuelo Americano Serie B (1956-1957)</option>
+                        <option value="esri_sat" selected>Esri World Imagery</option>
+                        <option value="google_sat">Google Satélite</option>
+                        <option value="google_hybrid">Google Híbrido</option>
+                        <option value="osm">OpenStreetMap</option>
+                        <option value="carto_dark">CartoDB Dark Matter</option>
                     </select>
                 </div>
                 <div id="mapRight" class="map-pane"></div>
@@ -390,14 +375,43 @@
         return { x: parseFloat(x.toFixed(2)), y: parseFloat(y.toFixed(2)) };
     }
 
+    function obtenerCapaTile(tipo) {
+        switch(tipo) {
+            case 'google_sat':
+                return L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                    maxZoom: 20,
+                    subdomains: ['mt0','mt1','mt2','mt3'],
+                    attribution: '© Google Satélite'
+                });
+            case 'google_hybrid':
+                return L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+                    maxZoom: 20,
+                    subdomains: ['mt0','mt1','mt2','mt3'],
+                    attribution: '© Google Híbrido'
+                });
+            case 'esri_sat':
+                return L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    maxZoom: 19,
+                    attribution: '© Esri & Contributors'
+                });
+            case 'carto_dark':
+                return L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    maxZoom: 19,
+                    attribution: '© CartoDB'
+                });
+            case 'osm':
+            default:
+                return L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                });
+        }
+    }
+
     function inicializarMapa() {
         if (map !== null) return;
         map = L.map('map').setView([40.416775, -3.703790], 6);
-
-        L.tileLayer('https://tms-pnoa-ign.idee.es/1.0.0/pnoa-ma/{z}/{x}/{y}.jpeg', {
-            maxZoom: 20,
-            attribution: '© Instituto Geográfico Nacional (PNOA)'
-        }).addTo(map);
+        obtenerCapaTile('google_sat').addTo(map);
     }
 
     document.getElementById('sigpacForm').addEventListener('submit', function(e) {
@@ -618,53 +632,20 @@
         }, 200);
     }
 
-    function obtenerUrlCapa(nombreCapa) {
-        if (nombreCapa === 'osm') {
-            return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-        } else if (nombreCapa === 'pnoa-ma') {
-            return 'https://tms-pnoa-ign.idee.es/1.0.0/pnoa-ma/{z}/{x}/{y}.jpeg';
-        } else if (nombreCapa === 'SIGPAC') {
-            return 'https://tms-pnoa-ign.idee.es/1.0.0/sigpac/{z}/{x}/{y}.jpeg';
-        } else if (nombreCapa === 'Americana') {
-            return 'https://tms-pnoa-ign.idee.es/1.0.0/vuelo-americano/{z}/{x}/{y}.jpeg';
-        } else if (nombreCapa === 'Nacional') {
-            return 'https://tms-pnoa-ign.idee.es/1.0.0/vuelo-nacional/{z}/{x}/{y}.jpeg';
-        } else if (nombreCapa === 'Interministerial') {
-            return 'https://tms-pnoa-ign.idee.es/1.0.0/vuelo-interministerial/{z}/{x}/{y}.jpeg';
-        } else if (nombreCapa === 'OLISTAT') {
-            return 'https://tms-pnoa-ign.idee.es/1.0.0/olistat/{z}/{x}/{y}.jpeg';
-        } else {
-            // Para todos los años de PNOA histórico (ej. PNOA-2022, PNOA-2006-2007, etc.)
-            return `https://tms-pnoa-ign.idee.es/1.0.0/${nombreCapa}/{z}/{x}/{y}.jpeg`;
-        }
-    }
-
     function actualizarCapaIzquierda() {
         if (mapLeft === null) return;
         if (layerLeft !== null) mapLeft.removeLayer(layerLeft);
 
-        const seleccion = document.getElementById('selectCapa1').value;
-        const urlFinal = obtenerUrlCapa(seleccion);
-        const maxZoomVal = (seleccion === 'osm') ? 19 : 20;
-
-        layerLeft = L.tileLayer(urlFinal, {
-            maxZoom: maxZoomVal,
-            attribution: '© IGN / OpenStreetMap'
-        }).addTo(mapLeft);
+        const tipo = document.getElementById('selectCapa1').value;
+        layerLeft = obtenerCapaTile(tipo).addTo(mapLeft);
     }
 
     function actualizarCapaDerecha() {
         if (mapRight === null) return;
         if (layerRight !== null) mapRight.removeLayer(layerRight);
 
-        const seleccion = document.getElementById('selectCapa2').value;
-        const urlFinal = obtenerUrlCapa(seleccion);
-        const maxZoomVal = (seleccion === 'osm') ? 19 : 20;
-
-        layerRight = L.tileLayer(urlFinal, {
-            maxZoom: maxZoomVal,
-            attribution: '© IGN / OpenStreetMap'
-        }).addTo(mapRight);
+        const tipo = document.getElementById('selectCapa2').value;
+        layerRight = obtenerCapaTile(tipo).addTo(mapRight);
     }
 
     function cambiarCapaIzquierda() {
@@ -703,7 +684,7 @@
         capaChinchetaLeft = L.marker([centroideActual.lat, centroideActual.lng]).addTo(mapLeft);
 
         if (capaPoligonoRight) mapRight.removeLayer(capaPoligonoRight);
-        if (capaChinchetaRight) mapRight.removeLayer(capaChinchetaRight);
+        if (capaChinchetaRight) mapRight.removeLayer(mapRight.removeLayer);
 
         capaPoligonoRight = L.polygon(latlngs, {
             color: '#ff00ff',
