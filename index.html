@@ -211,6 +211,17 @@
             z-index: 1;
         }
 
+        .aviso-capa {
+            display: none;
+            margin-top: 8px;
+            padding: 8px 12px;
+            font-size: 0.82rem;
+            color: #8a6d00;
+            background: #fff8e1;
+            border-left: 4px solid #fbc02d;
+            border-radius: 4px;
+        }
+
         .error {
             background-color: #ffebee;
             color: #c62828;
@@ -269,7 +280,7 @@
         </div>
 
         <div class="card">
-            <h3>Geolocalización (Ortofoto Actual + Contorno)</h3>
+            <h3>Geolocalización (Ortofoto PNOA + Contorno)</h3>
             <div id="map"></div>
             
             <div class="action-buttons-grid">
@@ -280,10 +291,10 @@
         </div>
     </div>
 
-    <!-- Contenedor inferior con doble visor y catálogo histórico oficial clonado por WMTS -->
+    <!-- Contenedor inferior con doble visor y selector histórico oficial en Pantalla 2 -->
     <div id="mapComparaContainer" class="card">
-        <h3>Comparador de Pantallas Independientes (Histórico Oficial WMTS)</h3>
-        <p style="font-size: 0.9rem; color: #555;">La Pantalla 1 muestra ortofoto de alta resolución y la Pantalla 2 clona exactamente la lista de mapas históricos institucionales de España mediante teselas optimizadas.</p>
+        <h3>Comparador de Pantallas Independientes (Histórico IGN oficial)</h3>
+        <p style="font-size: 0.9rem; color: #555;">La Pantalla 1 muestra la ortofoto actual y la Pantalla 2 incluye el catálogo completo de ortofotos históricas oficiales del IGN. Ambas muestran el recinto sobreimpresionado.</p>
         
         <div class="dual-maps-grid">
             <!-- Pantalla Izquierda -->
@@ -291,33 +302,22 @@
                 <div class="map-pane-header">
                     <label><strong>Pantalla 1:</strong></label>
                     <select id="selectCapa1" onchange="cambiarCapaIzquierda()">
-                        <option value="esri_sat">Esri World Imagery (Satélite)</option>
-                        <option value="google_sat">Google Satélite</option>
-                        <option value="osm">OpenStreetMap</option>
+                        <option value="pnoa">Ortofoto PNOA Actual</option>
+                        <option value="ign_base">Mapa Raster IGN Base</option>
                     </select>
                 </div>
                 <div id="mapLeft" class="map-pane"></div>
+                <div id="avisoLeft" class="aviso-capa"></div>
             </div>
 
-            <!-- Pantalla Derecha (Lista histórica clonada de GeaMap / IGN) -->
+            <!-- Pantalla Derecha (Históricos oficiales IGN) -->
             <div class="map-pane-card">
                 <div class="map-pane-header">
                     <label><strong>Pantalla 2 (Histórico):</strong></label>
-                    <select id="selectCapa2" onchange="cambiarCapaDerecha()">
-                        <option value="OI.OrthoimageCoverage">PNOA Actual (Máxima Actualidad)</option>
-                        <option value="PNOA-2022">PNOA 2022</option>
-                        <option value="PNOA-2020">PNOA 2020</option>
-                        <option value="PNOA-2018">PNOA 2018</option>
-                        <option value="PNOA-2015">PNOA 2015</option>
-                        <option value="PNOA-2010">PNOA 2010</option>
-                        <option value="SIGPAC" selected>Vuelo SIGPAC (1997-2003)</option>
-                        <option value="OLISTAT">Vuelo OLISTAT (1997-1998)</option>
-                        <option value="Nacional">Vuelo Nacional (1980-1986)</option>
-                        <option value="Interministerial">Vuelo Interministerial (1973-1986)</option>
-                        <option value="Americana">Vuelo Americano Serie B (1956-1957)</option>
-                    </select>
+                    <select id="selectCapa2" onchange="cambiarCapaDerecha()"></select>
                 </div>
                 <div id="mapRight" class="map-pane"></div>
+                <div id="avisoRight" class="aviso-capa"></div>
             </div>
         </div>
     </div>
@@ -380,46 +380,129 @@
         return { x: parseFloat(x.toFixed(2)), y: parseFloat(y.toFixed(2)) };
     }
 
-    // Proveedor general de capas base (XYZ)
-    function obtenerCapaTile(tipo) {
-        switch(tipo) {
-            case 'esri_sat':
-                return L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    maxZoom: 19,
-                    attribution: '© Esri & Contributors'
-                });
-            case 'google_sat':
-                return L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-                    maxZoom: 20,
-                    subdomains: ['mt0','mt1','mt2','mt3'],
-                    attribution: '© Google Satélite'
-                });
-            case 'osm':
-            default:
-                return L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap'
-                });
-        }
+    // =====================================================================
+    //  CATÁLOGO DE CAPAS (nombres verificados en los GetCapabilities del IGN)
+    // =====================================================================
+    // Las imágenes de un mapa Leaflet se cargan con <img>, por lo que NO necesitan CORS.
+    // Los fallos venían de nombres de capa inexistentes (el servidor devuelve un XML de
+    // error en lugar de imagen) y de pedir los vuelos antiguos al servicio equivocado.
+    const IGN_WMTS_PNOA = 'https://www.ign.es/wmts/pnoa-ma?service=WMTS&request=GetTile&version=1.0.0' +
+        '&Layer=OI.OrthoimageCoverage&Style=default&Format=image/jpeg' +
+        '&TileMatrixSet=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}';
+    const IGN_WMTS_BASE = 'https://www.ign.es/wmts/ign-base?service=WMTS&request=GetTile&version=1.0.0' +
+        '&Layer=IGNBaseTodo&Style=default&Format=image/jpeg' +
+        '&TileMatrixSet=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}';
+
+    const WMS_PNOA_HISTORICO = 'https://www.ign.es/wms/pnoa-historico';
+    const WMS_FOTOTECA = 'https://wms-fototeca.idee.es/fototeca';
+
+    const CAPAS_HISTORICAS = [];
+    for (let anio = 2024; anio >= 2004; anio--) {
+        CAPAS_HISTORICAS.push({ id: 'PNOA' + anio, titulo: 'PNOA ' + anio, url: WMS_PNOA_HISTORICO, layer: 'PNOA' + anio });
+    }
+    CAPAS_HISTORICAS.push(
+        { id: 'int',   titulo: 'Vuelo Interministerial (1976-1986)',   url: WMS_FOTOTECA, layer: 'interministerial_1973_86' },
+        { id: 'nac',   titulo: 'Vuelo Nacional (1981-1986)',           url: WMS_FOTOTECA, layer: 'nacional_1980_86' },
+        { id: 'amC',   titulo: 'Vuelo Americano Serie C (1967-1968)',  url: WMS_FOTOTECA, layer: 'americano_serie_c' },
+        { id: 'amB',   titulo: 'Vuelo Americano Serie B (1956-1957)',  url: WMS_FOTOTECA, layer: 'americano_1956_57' },
+        { id: 'a50',   titulo: 'Años 50 (1950-1959)',                  url: WMS_FOTOTECA, layer: 'anos50' },
+        { id: 'amA',   titulo: 'Vuelo Americano Serie A (1945-1946)',  url: WMS_FOTOTECA, layer: 'americano_serie_a' },
+        { id: 'a40',   titulo: 'Años 40 (1941-1948)',                  url: WMS_FOTOTECA, layer: 'anos40' },
+        { id: 'a30',   titulo: 'Años 30 (1930-1936)',                  url: WMS_FOTOTECA, layer: 'anos30' },
+        { id: 'ruiz',  titulo: 'Ruiz de Alda (1929-1930, Segura)',     url: WMS_FOTOTECA, layer: 'ruizDeAlda_1929_30' }
+    );
+
+    function crearCapaWMS(def, avisoId) {
+        const capa = L.tileLayer.wms(def.url, {
+            layers: def.layer,
+            format: 'image/jpeg',
+            transparent: false,
+            version: '1.3.0',
+            maxZoom: 20,
+            attribution: '© IGN / CNIG'
+        });
+        vigilarErroresTeselas(capa, avisoId, def.titulo);
+        return capa;
     }
 
-    // Constructor WMTS oficial para las ortofotos históricas y PNOA (idéntico a GeaMap)
-    function obtenerCapaWMTSHistorica(layerName) {
-        let endpoint = 'https://www.ign.es/wmts/pnoa-historico';
-        if (layerName === 'OI.OrthoimageCoverage') {
-            endpoint = 'https://www.ign.es/wmts/pnoa-ma';
-        }
-        
-        return L.tileLayer(`${endpoint}?layer=${layerName}&style=default&tileMatrixSet=GoogleMapsCompatible&service=WMTS&version=1.0.0&request=GetTile&format=image/png&tileMatrix={z}&tileRow={y}&tileCol={x}`, {
-            maxZoom: 19,
-            attribution: '© IGN España (WMTS Histórico)'
+    // Muestra un aviso bajo el mapa si las teselas no cargan (sin cobertura, caída del servicio…)
+    function vigilarErroresTeselas(capa, avisoId, titulo) {
+        let fallos = 0, ok = 0;
+        capa.on('tileload', () => { ok++; ocultarAviso(avisoId); });
+        capa.on('tileerror', () => {
+            fallos++;
+            if (ok === 0 && fallos >= 3) {
+                mostrarAviso(avisoId, `La capa «${titulo}» no devuelve imágenes en esta zona o zoom. ` +
+                    `Los vuelos antiguos solo cubren parte del territorio; prueba otro año o aleja el zoom.`);
+            }
         });
+    }
+
+    function mostrarAviso(id, texto) {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = texto; el.style.display = 'block'; }
+    }
+    function ocultarAviso(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    }
+
+    function poblarSelectorHistorico() {
+        const sel = document.getElementById('selectCapa2');
+        if (sel.options.length) return;
+        CAPAS_HISTORICAS.forEach(def => {
+            const opt = document.createElement('option');
+            opt.value = def.id;
+            opt.textContent = def.titulo;
+            sel.appendChild(opt);
+        });
+        sel.value = 'PNOA2010';
+    }
+
+    // =====================================================================
+    //  Peticiones con respaldo ante CORS
+    // =====================================================================
+    // 1º se intenta la petición directa. Si el navegador la bloquea por CORS (error de red),
+    // se reintenta a través de proxys CORS públicos. Edita la lista si tienes uno propio
+    // (p. ej. un Cloudflare Worker) y ponlo el primero.
+    const PROXIES_CORS = [
+        url => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
+        url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
+    ];
+
+    async function fetchJSONConRespaldo(url, timeoutMs = 15000) {
+        const intentos = [url, ...PROXIES_CORS.map(f => f(url))];
+        let ultimoError = null;
+        for (const u of intentos) {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), timeoutMs);
+            try {
+                const res = await fetch(u, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
+                clearTimeout(t);
+                if (!res.ok) {
+                    // Error HTTP real del servidor (404, 500...): el proxy no lo arreglaría
+                    if (u === url) throw Object.assign(new Error(`HTTP ${res.status}`), { http: true });
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                return await res.json();
+            } catch (err) {
+                clearTimeout(t);
+                ultimoError = err;
+                if (err.http) throw err;
+            }
+        }
+        throw ultimoError || new Error('Sin respuesta');
     }
 
     function inicializarMapa() {
         if (map !== null) return;
         map = L.map('map').setView([40.416775, -3.703790], 6);
-        obtenerCapaWMTSHistorica('OI.OrthoimageCoverage').addTo(map);
+
+        L.tileLayer(IGN_WMTS_PNOA, {
+            attribution: '© Instituto Geográfico Nacional (PNOA)',
+            maxZoom: 20,
+            maxNativeZoom: 19
+        }).addTo(map);
     }
 
     document.getElementById('sigpacForm').addEventListener('submit', function(e) {
@@ -440,11 +523,8 @@
 
         const urlSIGPAC = `https://sigpac-hubcloud.es/servicioconsultassigpac/query/recinfo/${parametrosActuales.pr}/${parametrosActuales.mu}/${parametrosActuales.ag}/${parametrosActuales.zo}/${parametrosActuales.po}/${parametrosActuales.pa}/${parametrosActuales.re}.json`;
 
-        fetch(urlSIGPAC)
-            .then(response => {
-                if (!response.ok) throw new Error(`Error en el servidor SIGPAC: ${response.status}`);
-                return response.json();
-            })
+        fetchJSONConRespaldo(urlSIGPAC)
+            .catch(err => { throw new Error(`No se pudo consultar el SIGPAC (${err.message}).`); })
             .then(dataSIGPAC => {
                 const item = Array.isArray(dataSIGPAC) ? dataSIGPAC[0] : dataSIGPAC;
                 if (!item) throw new Error("No se encontraron registros en el SIGPAC.");
@@ -458,8 +538,9 @@
 
                 const urlICV = `https://descargas.icv.gva.es/00/geoprocesos/XYaMunicipioCV?x=${utmActual.x}&y=${utmActual.y}&epsg=25830`;
                 
-                return fetch(urlICV)
-                    .then(resICV => resICV.ok ? resICV.json() : null)
+                // El ICV es un dato complementario: si falla (CORS, caída...) se sigue sin él
+                return fetchJSONConRespaldo(urlICV)
+                    .catch(() => null)
                     .then(dataICV => {
                         document.getElementById('loadingMessage').style.display = 'none';
                         renderizarTodo(item, dataICV, wktString);
@@ -612,6 +693,7 @@
         if (mapLeft !== null) mapLeft.remove();
         if (mapRight !== null) mapRight.remove();
 
+        poblarSelectorHistorico();
         mapLeft = L.map('mapLeft').setView([centroideActual.lat, centroideActual.lng], 16);
         mapRight = L.map('mapRight').setView([centroideActual.lat, centroideActual.lng], 16);
 
@@ -643,17 +725,31 @@
     function actualizarCapaIzquierda() {
         if (mapLeft === null) return;
         if (layerLeft !== null) mapLeft.removeLayer(layerLeft);
+        ocultarAviso('avisoLeft');
 
         const tipo = document.getElementById('selectCapa1').value;
-        layerLeft = obtenerCapaTile(tipo).addTo(mapLeft);
+        const url = (tipo === 'ign_base') ? IGN_WMTS_BASE : IGN_WMTS_PNOA;
+        const titulo = (tipo === 'ign_base') ? 'Mapa IGN Base' : 'PNOA actual';
+
+        layerLeft = L.tileLayer(url, {
+            attribution: '© IGN',
+            maxZoom: 20,
+            maxNativeZoom: 19
+        });
+        vigilarErroresTeselas(layerLeft, 'avisoLeft', titulo);
+        layerLeft.addTo(mapLeft);
     }
 
     function actualizarCapaDerecha() {
         if (mapRight === null) return;
         if (layerRight !== null) mapRight.removeLayer(layerRight);
+        ocultarAviso('avisoRight');
 
-        const seleccion = document.getElementById('selectCapa2').value;
-        layerRight = obtenerCapaWMTSHistorica(seleccion).addTo(mapRight);
+        const id = document.getElementById('selectCapa2').value;
+        const def = CAPAS_HISTORICAS.find(c => c.id === id) || CAPAS_HISTORICAS[0];
+
+        layerRight = crearCapaWMS(def, 'avisoRight');
+        layerRight.addTo(mapRight);
     }
 
     function cambiarCapaIzquierda() {
