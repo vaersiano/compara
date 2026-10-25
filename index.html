@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visor SIGPAC + Consultas de Geoprocesos ICV</title>
+    <title>Visor SIGPAC + Consultas de Geoprocesos ICV + Campo PAC</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     
@@ -46,7 +46,7 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -63,11 +63,52 @@
             color: #555;
         }
 
-        .form-group input {
+        .form-group input[type="number"] {
             padding: 8px 12px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 1rem;
+        }
+
+        .selector-busqueda {
+            position: relative;
+        }
+        .selector-busqueda input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+        .selector-busqueda .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .selector-busqueda .dropdown div {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.9rem;
+        }
+        .selector-busqueda .dropdown div:hover {
+            background: #f1f8e9;
+        }
+        .selector-busqueda .dropdown .sin-resultados {
+            color: #999;
+            font-style: italic;
+            cursor: default;
         }
 
         button {
@@ -239,6 +280,235 @@
             color: #666;
             margin: 20px 0;
         }
+
+        .btn-campo {
+            background-color: #6a1b9a;
+            margin-top: 15px;
+        }
+        .btn-campo:hover { background-color: #4a148c; }
+
+        #campoBotones {
+            display: none;
+            margin-top: 15px;
+            gap: 15px;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .btn-condicionalidad { background-color: #1565c0; }
+        .btn-condicionalidad:hover { background-color: #0d47a1; }
+        .btn-admisibilidad { background-color: #ef6c00; }
+        .btn-admisibilidad:hover { background-color: #e65100; }
+
+        .acordeon-datos {
+            margin-top: 20px;
+        }
+        .acordeon-datos summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 10px 15px;
+            background: #f1f8e9;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            user-select: none;
+        }
+        .acordeon-datos summary:hover {
+            background: #e8f5e9;
+        }
+        .acordeon-datos[open] summary {
+            border-radius: 6px 6px 0 0;
+            border-bottom: none;
+        }
+        .acordeon-contenido {
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            padding: 15px;
+        }
+
+        .modal-campo-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 10000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .modal-campo-overlay.activo {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        .modal-campo {
+            background: white;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .modal-campo h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+        .modal-campo h3 {
+            color: #444;
+            margin-top: 20px;
+            font-size: 1.05rem;
+        }
+        .pregunta-campo {
+            margin-bottom: 18px;
+            padding: 12px 15px;
+            background: #fafafa;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+        }
+        .pregunta-campo label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        .pregunta-campo .opciones {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .pregunta-campo .opciones label {
+            font-weight: normal;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+        .pregunta-campo textarea {
+            width: 100%;
+            min-height: 60px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .pregunta-campo input[type="number"],
+        .pregunta-campo select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .modal-campo .acciones-modal {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        .modal-campo .acciones-modal button {
+            flex: 1;
+            min-width: 140px;
+        }
+        .btn-grabar { background-color: #2e7d32; }
+        .btn-grabar:hover { background-color: #1b5e20; }
+        .btn-borrador { background-color: #757575; }
+        .btn-borrador:hover { background-color: #616161; }
+        .btn-cancelar { background-color: #c62828; }
+        .btn-cancelar:hover { background-color: #b71c1c; }
+
+        #listadoVisitas {
+            margin-top: 20px;
+        }
+        #listadoVisitas table {
+            font-size: 0.85rem;
+        }
+        #listadoVisitas .btn-mini {
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            width: auto;
+            border-radius: 4px;
+        }
+        .btn-exportar {
+            background-color: #00695c;
+            margin-top: 15px;
+        }
+        .btn-exportar:hover { background-color: #004d40; }
+
+        .badge-tipo {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .badge-cond { background: #bbdefb; color: #0d47a1; }
+        .badge-admi { background: #ffe0b2; color: #e65100; }
+        .badge-borrador { background: #fff9c4; color: #f57f17; }
+
+        .info-filtrado {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #e8f5e9;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: #2e7d32;
+        }
+
+        .bloque-catalogacion {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f3e5f5;
+            border-radius: 6px;
+            border-left: 4px solid #6a1b9a;
+        }
+        .bloque-catalogacion h3 {
+            margin-top: 0;
+            color: #4a148c;
+        }
+        .bloque-catalogacion .pregunta-campo {
+            background: white;
+        }
+        .bloque-catalogacion select[multiple] {
+            min-height: 120px;
+        }
+
+        /* Buscador de incidencias */
+        .buscador-incidencias {
+            margin-bottom: 8px;
+            position: relative;
+        }
+        .buscador-incidencias input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+        .buscador-incidencias .contador {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            color: #888;
+            pointer-events: none;
+        }
+        .buscador-incidencias .sin-coincidencias {
+            color: #c62828;
+            font-size: 0.8rem;
+            margin-top: 4px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -251,13 +521,27 @@
     <div class="card">
         <form id="sigpacForm">
             <div class="form-grid">
-                <div class="form-group"><label>Provincia</label><input type="number" id="provincia" value="46" required></div>
-                <div class="form-group"><label>Municipio</label><input type="number" id="municipio" value="215" required></div>
-                <div class="form-group"><label>Agregado</label><input type="number" id="agregado" value="0" required></div>
-                <div class="form-group"><label>Zona</label><input type="number" id="zona" value="0" required></div>
-                <div class="form-group"><label>Polígono</label><input type="number" id="poligono" value="1" required></div>
-                <div class="form-group"><label>Parcela</label><input type="number" id="parcela" value="2" required></div>
-                <div class="form-group"><label>Recinto</label><input type="number" id="recinto" value="1" required></div>
+                <div class="form-group">
+                    <label>Provincia *</label>
+                    <div class="selector-busqueda" id="selectorProvincia">
+                        <input type="text" id="provinciaBusqueda" placeholder="Ej: 46 - VALENCIA" autocomplete="off">
+                        <input type="hidden" id="provincia" value="">
+                        <div class="dropdown" id="provinciaDropdown"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Municipio *</label>
+                    <div class="selector-busqueda" id="selectorMunicipio">
+                        <input type="text" id="municipioBusqueda" placeholder="Ej: 215 - REQUENA" autocomplete="off">
+                        <input type="hidden" id="municipio" value="">
+                        <div class="dropdown" id="municipioDropdown"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Agregado</label><input type="number" id="agregado" placeholder="Ej: 0"></div>
+                <div class="form-group"><label>Zona</label><input type="number" id="zona" placeholder="Ej: 0"></div>
+                <div class="form-group"><label>Polígono *</label><input type="number" id="poligono" placeholder="Ej: 1"></div>
+                <div class="form-group"><label>Parcela *</label><input type="number" id="parcela" placeholder="Ej: 2"></div>
+                <div class="form-group"><label>Recinto</label><input type="number" id="recinto" placeholder="Ej: 1"></div>
             </div>
             <button type="submit">Buscar e Integrar Datos Territoriales</button>
         </form>
@@ -268,14 +552,25 @@
 
     <div id="resultsContainer" class="result-layout" style="display: none;">
         <div class="card">
-            <h3>Datos Alfanuméricos Combinados</h3>
-            <div class="table-responsive">
-                <table id="datosTabla">
-                    <thead>
-                        <tr><th>Propiedad</th><th>Valor</th></tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+            <details class="acordeon-datos" id="acordeonDatos">
+                <summary>📋 Datos Alfanuméricos Combinados (clic para expandir)</summary>
+                <div class="acordeon-contenido">
+                    <div class="table-responsive">
+                        <table id="datosTabla">
+                            <thead>
+                                <tr><th>Propiedad</th><th>Valor</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </details>
+
+            <button type="button" id="btnTomarDatosCampo" class="btn-campo">📝 Tomar datos en campo</button>
+
+            <div id="campoBotones" class="action-buttons-grid">
+                <button type="button" id="btnCondicionalidad" class="btn-condicionalidad">Condicionalidad</button>
+                <button type="button" id="btnAdmisibilidad" class="btn-admisibilidad">Admisibilidad</button>
             </div>
         </div>
 
@@ -291,13 +586,30 @@
         </div>
     </div>
 
-    <!-- Contenedor inferior con doble visor y selector histórico oficial en Pantalla 2 -->
+    <div class="card" id="listadoVisitas" style="display:none;">
+        <h3>📁 Visitas guardadas</h3>
+        <div class="table-responsive" style="max-height:300px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha/Hora</th>
+                        <th>Tipo</th>
+                        <th>Parcela</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyVisitas"></tbody>
+            </table>
+        </div>
+        <button type="button" id="btnExportarCSV" class="btn-exportar">⬇ Exportar CSV (UTF-8 BOM, comas)</button>
+    </div>
+
     <div id="mapComparaContainer" class="card">
         <h3>Comparador de Pantallas Independientes (Histórico IGN oficial)</h3>
         <p style="font-size: 0.9rem; color: #555;">La Pantalla 1 muestra la ortofoto actual y la Pantalla 2 incluye el catálogo completo de ortofotos históricas oficiales del IGN. Ambas muestran el recinto sobreimpresionado.</p>
         
         <div class="dual-maps-grid">
-            <!-- Pantalla Izquierda -->
             <div class="map-pane-card">
                 <div class="map-pane-header">
                     <label><strong>Pantalla 1:</strong></label>
@@ -310,7 +622,6 @@
                 <div id="avisoLeft" class="aviso-capa"></div>
             </div>
 
-            <!-- Pantalla Derecha (Históricos oficiales IGN) -->
             <div class="map-pane-card">
                 <div class="map-pane-header">
                     <label><strong>Pantalla 2 (Histórico):</strong></label>
@@ -323,31 +634,236 @@
     </div>
 </div>
 
+<div class="modal-campo-overlay" id="modalCampoOverlay">
+    <div class="modal-campo" id="modalCampo">
+        <h2 id="modalCampoTitulo">Cuestionario de campo</h2>
+        <p style="font-size:0.9rem; color:#666;" id="modalCampoParcelaInfo"></p>
+        <div id="infoFiltrado" class="info-filtrado" style="display:none;"></div>
+        <form id="formCampo">
+            <div id="preguntasContainer"></div>
+            <div class="acciones-modal">
+                <button type="button" class="btn-borrador" id="btnGuardarBorrador">💾 Guardar borrador</button>
+                <button type="button" class="btn-cancelar" id="btnCancelarCampo">✖ Cancelar</button>
+                <button type="submit" class="btn-grabar" id="btnGrabarCampo">✔ Grabar visita</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script>
-    let map = null;
-    let mapLeft = null;
-    let mapRight = null;
-    
-    let layerLeft = null;
-    let layerRight = null;
-
-    let capaPoligono = null; 
-    let capaChincheta = null;
-    let capaPoligonoLeft = null;
-    let capaChinchetaLeft = null;
-    let capaPoligonoRight = null;
-    let capaChinchetaRight = null;
-
+    // ============================================================
+    // VARIABLES GLOBALES
+    // ============================================================
+    let map = null, mapLeft = null, mapRight = null;
+    let layerLeft = null, layerRight = null;
+    let capaPoligono = null, capaChincheta = null;
+    let capaPoligonoLeft = null, capaChinchetaLeft = null;
+    let capaPoligonoRight = null, capaChinchetaRight = null;
     let centroideActual = { lat: 0, lng: 0 };
     let utmActual = { x: 0, y: 0 };
     let parametrosActuales = { pr:0, mu:0, ag:0, zo:0, po:0, pa:0, re:0 };
     let geometriaWKTActual = "";
     let comparadorActivo = false;
     let sincronizandoMapas = false;
+    let datosParcelaActual = null;
+    let itemSIGPACActual = null;
+    let tipoVisitaActual = null;
+    let borradorEnEdicion = null;
+    let db = null;
 
-    // Conversor WGS84 a UTM Huso 30N
+    let LISTAS_SIGPAC = {
+        provincias: [],
+        municipios: [],
+        usos: [],
+        incidencias: [],
+        epp_area: []
+    };
+
+    const EPP_LINEA_FIJA = [
+        { codigo: 'ST', descripcion: 'Setos' },
+        { codigo: 'AL', descripcion: 'Árboles en hilera' },
+        { codigo: 'LD', descripcion: 'Lindes' },
+        { codigo: 'TR', descripcion: 'Terrazas de retención' },
+        { codigo: 'MU', descripcion: 'Muros de piedra' }
+    ];
+    const EPP_PUNTO_FIJA = [
+        { codigo: 'AP', descripcion: 'Árboles aislados' }
+    ];
+
+    const USOS_PASTO = ['PS', 'PR', 'PA', 'PT', 'PM'];
+    const USOS_LENOSOS = ['VI', 'OL', 'FR', 'CI', 'AL', 'AV', 'CT', 'FL', 'FU', 'LI', 'MA', 'NU', 'PL', 'SO', 'TR', 'VA', 'ZF'];
+    const USOS_HERBACEOS = ['TA', 'TH', 'TI', 'TB', 'TC', 'TD', 'TE', 'TF', 'TG', 'TL', 'TM', 'TN', 'TO', 'TP', 'TQ', 'TV', 'TX'];
+
+    // ============================================================
+    // UTILIDADES DE TRADUCCIÓN (solo visual)
+    // ============================================================
+    function traducirCodigo(lista, codigo) {
+        if (!codigo) return codigo;
+        const codStr = String(codigo).trim();
+        const item = lista.find(x => x.codigo === codStr);
+        return item ? `${item.descripcion} (${codStr})` : codStr;
+    }
+
+    // ============================================================
+    // CARGA DE LISTAS SIGPAC
+    // ============================================================
+    async function cargarListaCodigos(nombreParametro) {
+        const url = `https://sigpac-hubcloud.es/codigossigpac/${nombreParametro}.json`;
+        try {
+            const data = await fetchJSONConRespaldo(url);
+            if (data && Array.isArray(data.codigos)) {
+                return data.codigos.map(c => ({
+                    codigo: String(c.codigo),
+                    descripcion: c.descripcion || ''
+                }));
+            }
+            return [];
+        } catch (e) {
+            console.warn(`No se pudo cargar la lista ${nombreParametro}:`, e);
+            return [];
+        }
+    }
+
+    async function cargarMunicipiosDeProvincia(codProv) {
+        if (!codProv) return [];
+        const url = `https://sigpac-hubcloud.es/codigossigpac/municipio${codProv}.json`;
+        try {
+            const data = await fetchJSONConRespaldo(url);
+            if (data && Array.isArray(data.codigos)) {
+                return data.codigos.map(c => ({
+                    codigo: String(c.codigo),
+                    descripcion: c.descripcion || ''
+                }));
+            }
+            return [];
+        } catch (e) {
+            console.warn(`No se pudo cargar municipios de provincia ${codProv}:`, e);
+            return [];
+        }
+    }
+
+    async function inicializarListasSigpac() {
+        const [provincias, usos, incidencias, epp_area] = await Promise.all([
+            cargarListaCodigos('provincia'),
+            cargarListaCodigos('cod_uso_sigpac'),
+            cargarListaCodigos('cod_incidencia'),
+            cargarListaCodigos('cod_tipo_e_paisaje')
+        ]);
+        LISTAS_SIGPAC.provincias = provincias;
+        LISTAS_SIGPAC.usos = usos;
+        LISTAS_SIGPAC.incidencias = incidencias;
+        LISTAS_SIGPAC.epp_area = epp_area;
+    }
+
+    // ============================================================
+    // SELECTORES CON BÚSQUEDA
+    // ============================================================
+    let dropdownAbierto = null;
+    document.addEventListener('click', (e) => {
+        if (dropdownAbierto && !dropdownAbierto.input.contains(e.target) && !dropdownAbierto.dropdown.contains(e.target)) {
+            dropdownAbierto.dropdown.style.display = 'none';
+            dropdownAbierto = null;
+        }
+    });
+
+    function configurarSelector(idInputBusqueda, idInputOculto, idDropdown, getLista, onSeleccion, placeholderVacio) {
+        const inputBusqueda = document.getElementById(idInputBusqueda);
+        const inputOculto = document.getElementById(idInputOculto);
+        const dropdown = document.getElementById(idDropdown);
+        if (!inputBusqueda || !dropdown) return;
+
+        function renderOpciones(filtro = '') {
+            dropdown.innerHTML = '';
+            let lista = getLista();
+
+            if (!lista || lista.length === 0) {
+                const div = document.createElement('div');
+                div.className = 'sin-resultados';
+                div.textContent = placeholderVacio || 'No hay datos disponibles. Selecciona primero una provincia.';
+                dropdown.appendChild(div);
+                return;
+            }
+
+            if (filtro) {
+                try {
+                    const regex = new RegExp(filtro, 'i');
+                    lista = lista.filter(p => regex.test(p.descripcion) || regex.test(p.codigo));
+                } catch (e) {
+                    const f = filtro.toLowerCase();
+                    lista = lista.filter(p => p.descripcion.toLowerCase().includes(f) || p.codigo.includes(f));
+                }
+            }
+
+            if (lista.length === 0) {
+                const div = document.createElement('div');
+                div.className = 'sin-resultados';
+                div.textContent = 'No se encontraron resultados';
+                dropdown.appendChild(div);
+                return;
+            }
+
+            lista.forEach(p => {
+                const div = document.createElement('div');
+                div.textContent = `${p.codigo} - ${p.descripcion}`;
+                div.onclick = () => {
+                    inputOculto.value = p.codigo;
+                    inputBusqueda.value = `${p.codigo} - ${p.descripcion}`;
+                    dropdown.style.display = 'none';
+                    dropdownAbierto = null;
+                    if (onSeleccion) onSeleccion(p.codigo);
+                };
+                dropdown.appendChild(div);
+            });
+        }
+
+        inputBusqueda.addEventListener('focus', () => {
+            renderOpciones(inputBusqueda.value);
+            dropdown.style.display = 'block';
+            dropdownAbierto = { input: inputBusqueda, dropdown: dropdown };
+        });
+        inputBusqueda.addEventListener('input', () => {
+            renderOpciones(inputBusqueda.value);
+            dropdown.style.display = 'block';
+            dropdownAbierto = { input: inputBusqueda, dropdown: dropdown };
+        });
+    }
+
+    async function configurarSelectores() {
+        configurarSelector('provinciaBusqueda', 'provincia', 'provinciaDropdown',
+            () => LISTAS_SIGPAC.provincias,
+            async (codProv) => {
+                const munBusq = document.getElementById('municipioBusqueda');
+                const munOculto = document.getElementById('municipio');
+                if (munBusq) munBusq.value = '';
+                if (munOculto) munOculto.value = '';
+
+                LISTAS_SIGPAC.municipios = await cargarMunicipiosDeProvincia(codProv);
+                if (LISTAS_SIGPAC.municipios.length === 0) {
+                    console.warn(`No se pudieron cargar municipios de la provincia ${codProv}`);
+                }
+            },
+            'No hay provincias cargadas. Revisa tu conexión.'
+        );
+
+        configurarSelector('municipioBusqueda', 'municipio', 'municipioDropdown',
+            () => LISTAS_SIGPAC.municipios,
+            null,
+            'Selecciona primero una provincia para cargar los municipios.'
+        );
+
+        try {
+            LISTAS_SIGPAC.municipios = await cargarMunicipiosDeProvincia('46');
+        } catch (e) {
+            console.warn('No se pudieron precargar municipios de la provincia 46:', e);
+            LISTAS_SIGPAC.municipios = [];
+        }
+    }
+
+    // ============================================================
+    // CONVERSOR UTM
+    // ============================================================
     function convertWGS84ToUTM30N(lat, lng) {
         const a = 6378137.0; 
         const f = 1 / 298.257222101;
@@ -380,12 +896,9 @@
         return { x: parseFloat(x.toFixed(2)), y: parseFloat(y.toFixed(2)) };
     }
 
-    // =====================================================================
-    //  CATÁLOGO DE CAPAS (nombres verificados en los GetCapabilities del IGN)
-    // =====================================================================
-    // Las imágenes de un mapa Leaflet se cargan con <img>, por lo que NO necesitan CORS.
-    // Los fallos venían de nombres de capa inexistentes (el servidor devuelve un XML de
-    // error en lugar de imagen) y de pedir los vuelos antiguos al servicio equivocado.
+    // ============================================================
+    // CAPAS IGN
+    // ============================================================
     const IGN_WMTS_PNOA = 'https://www.ign.es/wmts/pnoa-ma?service=WMTS&request=GetTile&version=1.0.0' +
         '&Layer=OI.OrthoimageCoverage&Style=default&Format=image/jpeg' +
         '&TileMatrixSet=GoogleMapsCompatible&TileMatrix={z}&TileRow={y}&TileCol={x}';
@@ -414,18 +927,13 @@
 
     function crearCapaWMS(def, avisoId) {
         const capa = L.tileLayer.wms(def.url, {
-            layers: def.layer,
-            format: 'image/jpeg',
-            transparent: false,
-            version: '1.3.0',
-            maxZoom: 20,
-            attribution: '© IGN / CNIG'
+            layers: def.layer, format: 'image/jpeg', transparent: false,
+            version: '1.3.0', maxZoom: 20, attribution: '© IGN / CNIG'
         });
         vigilarErroresTeselas(capa, avisoId, def.titulo);
         return capa;
     }
 
-    // Muestra un aviso bajo el mapa si las teselas no cargan (sin cobertura, caída del servicio…)
     function vigilarErroresTeselas(capa, avisoId, titulo) {
         let fallos = 0, ok = 0;
         capa.on('tileload', () => { ok++; ocultarAviso(avisoId); });
@@ -452,19 +960,15 @@
         if (sel.options.length) return;
         CAPAS_HISTORICAS.forEach(def => {
             const opt = document.createElement('option');
-            opt.value = def.id;
-            opt.textContent = def.titulo;
+            opt.value = def.id; opt.textContent = def.titulo;
             sel.appendChild(opt);
         });
         sel.value = 'PNOA2010';
     }
 
-    // =====================================================================
-    //  Peticiones con respaldo ante CORS
-    // =====================================================================
-    // 1º se intenta la petición directa. Si el navegador la bloquea por CORS (error de red),
-    // se reintenta a través de proxys CORS públicos. Edita la lista si tienes uno propio
-    // (p. ej. un Cloudflare Worker) y ponlo el primero.
+    // ============================================================
+    // FETCH CON RESPALDO CORS
+    // ============================================================
     const PROXIES_CORS = [
         url => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
         url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
@@ -480,46 +984,62 @@
                 const res = await fetch(u, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
                 clearTimeout(t);
                 if (!res.ok) {
-                    // Error HTTP real del servidor (404, 500...): el proxy no lo arreglaría
                     if (u === url) throw Object.assign(new Error(`HTTP ${res.status}`), { http: true });
                     throw new Error(`HTTP ${res.status}`);
                 }
                 return await res.json();
             } catch (err) {
-                clearTimeout(t);
-                ultimoError = err;
+                clearTimeout(t); ultimoError = err;
                 if (err.http) throw err;
             }
         }
         throw ultimoError || new Error('Sin respuesta');
     }
 
+    // ============================================================
+    // MAPA PRINCIPAL
+    // ============================================================
     function inicializarMapa() {
         if (map !== null) return;
         map = L.map('map').setView([40.416775, -3.703790], 6);
-
         L.tileLayer(IGN_WMTS_PNOA, {
             attribution: '© Instituto Geográfico Nacional (PNOA)',
-            maxZoom: 20,
-            maxNativeZoom: 19
+            maxZoom: 20, maxNativeZoom: 19
         }).addTo(map);
     }
 
+    // ============================================================
+    // BÚSQUEDA SIGPAC
+    // ============================================================
     document.getElementById('sigpacForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
+        const pr = document.getElementById('provincia').value.trim();
+        const mu = document.getElementById('municipio').value.trim();
+        const po = document.getElementById('poligono').value.trim();
+        const pa = document.getElementById('parcela').value.trim();
+
+        if (!pr || !mu || !po || !pa) {
+            const errDiv = document.getElementById('errorMessage');
+            errDiv.style.display = 'block';
+            errDiv.innerHTML = '<strong>Faltan datos obligatorios:</strong><br>' +
+                'Debes seleccionar Provincia y Municipio, e introducir Polígono y Parcela.';
+            return;
+        }
+
         document.getElementById('errorMessage').style.display = 'none';
         document.getElementById('resultsContainer').style.display = 'none';
+        document.getElementById('campoBotones').style.display = 'none';
         ocultarComparador();
         document.getElementById('loadingMessage').style.display = 'block';
 
-        parametrosActuales.pr = document.getElementById('provincia').value;
-        parametrosActuales.mu = document.getElementById('municipio').value;
-        parametrosActuales.ag = document.getElementById('agregado').value;
-        parametrosActuales.zo = document.getElementById('zona').value;
-        parametrosActuales.po = document.getElementById('poligono').value;
-        parametrosActuales.pa = document.getElementById('parcela').value;
-        parametrosActuales.re = document.getElementById('recinto').value;
+        parametrosActuales.pr = pr;
+        parametrosActuales.mu = mu;
+        parametrosActuales.ag = document.getElementById('agregado').value.trim() || '0';
+        parametrosActuales.zo = document.getElementById('zona').value.trim() || '0';
+        parametrosActuales.po = po;
+        parametrosActuales.pa = pa;
+        parametrosActuales.re = document.getElementById('recinto').value.trim() || '0';
 
         const urlSIGPAC = `https://sigpac-hubcloud.es/servicioconsultassigpac/query/recinfo/${parametrosActuales.pr}/${parametrosActuales.mu}/${parametrosActuales.ag}/${parametrosActuales.zo}/${parametrosActuales.po}/${parametrosActuales.pa}/${parametrosActuales.re}.json`;
 
@@ -527,18 +1047,16 @@
             .catch(err => { throw new Error(`No se pudo consultar el SIGPAC (${err.message}).`); })
             .then(dataSIGPAC => {
                 const item = Array.isArray(dataSIGPAC) ? dataSIGPAC[0] : dataSIGPAC;
-                if (!item) throw new Error("No se encontraron registros en el SIGPAC.");
-
+                if (!item) throw new Error("No se encontraron registros en el SIGPAC para esa combinación de provincia/municipio/agregado/zona/polígono/parcela/recinto.");
                 const wktString = item.wkt || item.WKT;
                 if (!wktString) throw new Error("El recinto no contiene geometría WKT.");
-                
+
                 geometriaWKTActual = wktString;
                 calcularCentroideYWKT(wktString);
                 utmActual = convertWGS84ToUTM30N(centroideActual.lat, centroideActual.lng);
 
                 const urlICV = `https://descargas.icv.gva.es/00/geoprocesos/XYaMunicipioCV?x=${utmActual.x}&y=${utmActual.y}&epsg=25830`;
-                
-                // El ICV es un dato complementario: si falla (CORS, caída...) se sigue sin él
+
                 return fetchJSONConRespaldo(urlICV)
                     .catch(() => null)
                     .then(dataICV => {
@@ -564,9 +1082,7 @@
             if(i === 0 && (matches[i] === '4258' || matches[i] === '4326') && matches.length % 2 !== 0) { i--; continue; }
             const lng = parseFloat(matches[i]);
             const lat = parseFloat(matches[i+1]);
-            if (!isNaN(lat) && !isNaN(lng)) {
-                sumaLat += lat; sumaLng += lng; totalPuntos++;
-            }
+            if (!isNaN(lat) && !isNaN(lng)) { sumaLat += lat; sumaLng += lng; totalPuntos++; }
         }
         centroideActual.lat = sumaLat / totalPuntos;
         centroideActual.lng = sumaLng / totalPuntos;
@@ -575,6 +1091,28 @@
     function renderizarTodo(itemSIGPAC, dataICV, wktString) {
         document.getElementById('resultsContainer').style.display = 'grid';
         inicializarMapa();
+
+        itemSIGPACActual = itemSIGPAC;
+        datosParcelaActual = {
+            provincia: parametrosActuales.pr,
+            municipio: parametrosActuales.mu,
+            agregado: parametrosActuales.ag,
+            zona: parametrosActuales.zo,
+            poligono: parametrosActuales.po,
+            parcela: parametrosActuales.pa,
+            recinto: parametrosActuales.re,
+            superficie: itemSIGPAC.superficie || null,
+            pendiente_media: itemSIGPAC.pendiente_media || null,
+            coef_regadio: itemSIGPAC.coef_regadio || null,
+            admisibilidad: itemSIGPAC.admisibilidad || null,
+            incidencias: itemSIGPAC.incidencias || null,
+            uso_sigpac: itemSIGPAC.uso_sigpac || null,
+            wkt: wktString,
+            centroide_lat: centroideActual.lat,
+            centroide_lng: centroideActual.lng,
+            utm_x: utmActual.x,
+            utm_y: utmActual.y
+        };
 
         const tbody = document.getElementById('datosTabla').querySelector('tbody');
         tbody.innerHTML = '';
@@ -597,11 +1135,29 @@
 
         for (const [key, val] of Object.entries(itemSIGPAC)) {
             if (key.toLowerCase() === 'wkt') continue;
-            inyectarFilaTabla(tbody, key, val !== null ? val : 'N/C');
+            let valorMostrar = val !== null ? val : 'N/C';
+            
+            if (key === 'provincia' && LISTAS_SIGPAC.provincias.length > 0 && val) {
+                valorMostrar = traducirCodigo(LISTAS_SIGPAC.provincias, val);
+            } else if (key === 'municipio' && LISTAS_SIGPAC.municipios.length > 0 && val) {
+                valorMostrar = traducirCodigo(LISTAS_SIGPAC.municipios, val);
+            } else if (key === 'uso_sigpac' && LISTAS_SIGPAC.usos.length > 0 && val) {
+                valorMostrar = traducirCodigo(LISTAS_SIGPAC.usos, val);
+            } else if (key === 'incidencias' && LISTAS_SIGPAC.incidencias.length > 0 && val) {
+                const codigos = String(val).split(',').map(c => c.trim());
+                const traducidos = codigos.map(c => traducirCodigo(LISTAS_SIGPAC.incidencias, c));
+                valorMostrar = traducidos.join(', ');
+            }
+            
+            inyectarFilaTabla(tbody, key, valorMostrar);
         }
+
+        document.getElementById('btnTomarDatosCampo').style.display = 'block';
+        document.getElementById('campoBotones').style.display = 'none';
 
         dibujarGeometriaMapa(wktString);
         configurarBotonesAccion();
+        cargarListadoVisitas();
     }
 
     function inyectarFilaTabla(tbody, propiedad, valor, claseEstilo = "") {
@@ -618,7 +1174,6 @@
         const regex = /[-+]?[0-9]*\.?[0-9]+/g;
         const matches = wkt.match(regex);
         let latlngs = [];
-
         for (let i = 0; i < matches.length; i += 2) {
             if(i === 0 && (matches[i] === '4258' || matches[i] === '4326') && matches.length % 2 !== 0) { i--; continue; }
             const lng = parseFloat(matches[i]);
@@ -627,10 +1182,7 @@
         }
 
         capaPoligono = L.polygon(latlngs, {
-            color: '#00ff33',
-            weight: 3,
-            fillColor: '#00ff33',
-            fillOpacity: 0.2
+            color: '#00ff33', weight: 3, fillColor: '#00ff33', fillOpacity: 0.2
         }).addTo(map);
 
         capaChincheta = L.marker([centroideActual.lat, centroideActual.lng]).addTo(map)
@@ -649,11 +1201,12 @@
         document.getElementById('btnGoogleMaps').onclick = function() {
             window.open(`https://www.google.com/maps/search/?api=1&query=${centroideActual.lat},${centroideActual.lng}`, '_blank');
         };
-        document.getElementById('btnCompara').onclick = function() {
-            toggleComparador();
-        };
+        document.getElementById('btnCompara').onclick = function() { toggleComparador(); };
     }
 
+    // ============================================================
+    // COMPARADOR
+    // ============================================================
     function toggleComparador() {
         const container = document.getElementById('mapComparaContainer');
         if (!comparadorActivo) {
@@ -664,22 +1217,14 @@
             document.getElementById('btnCompara').style.color = '#ffffff';
             document.getElementById('btnCompara').innerText = 'CERRAR COMPARA';
             container.scrollIntoView({ behavior: 'smooth' });
-        } else {
-            ocultarComparador();
-        }
+        } else { ocultarComparador(); }
     }
 
     function ocultarComparador() {
         const container = document.getElementById('mapComparaContainer');
         container.style.display = 'none';
-        if (mapLeft !== null) {
-            mapLeft.remove();
-            mapLeft = null;
-        }
-        if (mapRight !== null) {
-            mapRight.remove();
-            mapRight = null;
-        }
+        if (mapLeft !== null) { mapLeft.remove(); mapLeft = null; }
+        if (mapRight !== null) { mapRight.remove(); mapRight = null; }
         comparadorActivo = false;
         const btn = document.getElementById('btnCompara');
         if (btn) {
@@ -697,14 +1242,12 @@
         mapLeft = L.map('mapLeft').setView([centroideActual.lat, centroideActual.lng], 16);
         mapRight = L.map('mapRight').setView([centroideActual.lat, centroideActual.lng], 16);
 
-        // Sincronización fluida entre ambas pantallas
         mapLeft.on('move', function() {
             if (sincronizandoMapas) return;
             sincronizandoMapas = true;
             mapRight.setView(mapLeft.getCenter(), mapLeft.getZoom(), { animate: false });
             sincronizandoMapas = false;
         });
-
         mapRight.on('move', function() {
             if (sincronizandoMapas) return;
             sincronizandoMapas = true;
@@ -726,16 +1269,10 @@
         if (mapLeft === null) return;
         if (layerLeft !== null) mapLeft.removeLayer(layerLeft);
         ocultarAviso('avisoLeft');
-
         const tipo = document.getElementById('selectCapa1').value;
         const url = (tipo === 'ign_base') ? IGN_WMTS_BASE : IGN_WMTS_PNOA;
         const titulo = (tipo === 'ign_base') ? 'Mapa IGN Base' : 'PNOA actual';
-
-        layerLeft = L.tileLayer(url, {
-            attribution: '© IGN',
-            maxZoom: 20,
-            maxNativeZoom: 19
-        });
+        layerLeft = L.tileLayer(url, { attribution: '© IGN', maxZoom: 20, maxNativeZoom: 19 });
         vigilarErroresTeselas(layerLeft, 'avisoLeft', titulo);
         layerLeft.addTo(mapLeft);
     }
@@ -744,30 +1281,21 @@
         if (mapRight === null) return;
         if (layerRight !== null) mapRight.removeLayer(layerRight);
         ocultarAviso('avisoRight');
-
         const id = document.getElementById('selectCapa2').value;
         const def = CAPAS_HISTORICAS.find(c => c.id === id) || CAPAS_HISTORICAS[0];
-
         layerRight = crearCapaWMS(def, 'avisoRight');
         layerRight.addTo(mapRight);
     }
 
-    function cambiarCapaIzquierda() {
-        actualizarCapaIzquierda();
-    }
-
-    function cambiarCapaDerecha() {
-        actualizarCapaDerecha();
-    }
+    function cambiarCapaIzquierda() { actualizarCapaIzquierda(); }
+    function cambiarCapaDerecha() { actualizarCapaDerecha(); }
 
     function dibujarGeometriaEnMapaDual() {
         if (!geometriaWKTActual) return;
-
         const regex = /[-+]?[0-9]*\.?[0-9]+/g;
         const matches = geometriaWKTActual.match(regex);
         let latlngs = [];
         if (!matches) return;
-
         for (let i = 0; i < matches.length; i += 2) {
             if(i === 0 && (matches[i] === '4258' || matches[i] === '4326') && matches.length % 2 !== 0) { i--; continue; }
             const lng = parseFloat(matches[i]);
@@ -777,30 +1305,879 @@
 
         if (capaPoligonoLeft) mapLeft.removeLayer(capaPoligonoLeft);
         if (capaChinchetaLeft) mapLeft.removeLayer(capaChinchetaLeft);
-
         capaPoligonoLeft = L.polygon(latlngs, {
-            color: '#ff00ff',
-            weight: 3,
-            fillColor: '#ff00ff',
-            fillOpacity: 0.15
+            color: '#ff00ff', weight: 3, fillColor: '#ff00ff', fillOpacity: 0.15
         }).addTo(mapLeft);
-
         capaChinchetaLeft = L.marker([centroideActual.lat, centroideActual.lng]).addTo(mapLeft);
 
         if (capaPoligonoRight) mapRight.removeLayer(capaPoligonoRight);
         if (capaChinchetaRight) mapRight.removeLayer(capaChinchetaRight);
-
         capaPoligonoRight = L.polygon(latlngs, {
-            color: '#ff00ff',
-            weight: 3,
-            fillColor: '#ff00ff',
-            fillOpacity: 0.15
+            color: '#ff00ff', weight: 3, fillColor: '#ff00ff', fillOpacity: 0.15
         }).addTo(mapRight);
-
         capaChinchetaRight = L.marker([centroideActual.lat, centroideActual.lng]).addTo(mapRight);
 
         mapLeft.fitBounds(capaPoligonoLeft.getBounds(), { padding: [40, 40] });
     }
+
+    // ============================================================
+    // CUESTIONARIOS
+    // ============================================================
+    const CUESTIONARIOS = {
+        condicionalidad: {
+            titulo: 'Cuestionario de Condicionalidad (RD 1049/2022)',
+            secciones: [
+                {
+                    titulo: 'BCAM 1 — Pastos permanentes',
+                    regla: { tipo: 'uso', valores: USOS_PASTO },
+                    preguntas: [
+                        { id: 'bcam1_pastos', texto: '¿Se mantiene la superficie de pastos permanentes sin reducción significativa respecto al año de referencia?', tipo: 'si_no_np' },
+                        { id: 'bcam1_laboreo', texto: '¿Se ha realizado laboreo en pastos permanentes sin autorización?', tipo: 'si_no_np', invertir: true }
+                    ]
+                },
+                {
+                    titulo: 'BCAM 3 — Quema de rastrojos',
+                    regla: { tipo: 'uso', valores: [...USOS_HERBACEOS, ...USOS_LENOSOS] },
+                    preguntas: [
+                        { id: 'bcam3_quema', texto: '¿Se ha quemado rastrojo en la parcela? (solo permitido por razones fitosanitarias justificadas)', tipo: 'si_no_np', invertir: true },
+                        { id: 'bcam3_justificada', texto: 'Si hubo quema, ¿estaba justificada por razones fitosanitarias y autorizada?', tipo: 'si_no_np', condicion: 'bcam3_quema', condicion_valor: 'Sí' }
+                    ]
+                },
+                {
+                    titulo: 'BCAM 4 — Franjas de protección en márgenes de ríos',
+                    regla: { tipo: 'uso', valores: [...USOS_HERBACEOS, ...USOS_LENOSOS, ...USOS_PASTO] },
+                    preguntas: [
+                        { id: 'bcam4_colindante', texto: '¿La parcela colinda con cauce fluvial o masa de agua?', tipo: 'si_no' },
+                        { id: 'bcam4_franja', texto: 'Si colinda, ¿existe franja de protección sin fertilización ni fitosanitarios?', tipo: 'si_no_np', condicion: 'bcam4_colindante', condicion_valor: 'Sí' }
+                    ]
+                },
+                {
+                    titulo: 'BCAM 5 — Gestión de la labranza (pendiente ≥ 10%)',
+                    regla: { tipo: 'pendiente_umbral', umbral: 10 },
+                    preguntas: [
+                        { id: 'bcam5_pendiente', texto: '¿La parcela tiene pendiente media ≥ 10%?', tipo: 'si_no' },
+                        { id: 'bcam5_direccion', texto: 'Si pendiente ≥ 10%, ¿se labra siguiendo curvas de nivel (no en dirección de máxima pendiente)?', tipo: 'si_no_np', condicion: 'bcam5_pendiente', condicion_valor: 'Sí' },
+                        { 
+                            id: 'bcam5_excepcion', 
+                            texto: 'Si NO labra en curvas de nivel, indique la excepción aplicable:', 
+                            tipo: 'seleccion', 
+                            opciones: [
+                                'Parcela ≤ 1 ha (tierras de cultivo o leñosos)',
+                                'Parcela irregular o alargada en cultivos leñosos',
+                                'Leñosos implantados antes de 2023 con riego/marco que impide labrar transversalmente',
+                                'Pendiente superior al 10% (excepción autorizada)',
+                                'No aplica excepción'
+                            ],
+                            condicion: 'bcam5_direccion',
+                            condicion_valor: 'No'
+                        }
+                    ]
+                },
+                {
+                    titulo: 'BCAM 6 — Cobertura mínima del suelo',
+                    regla: { tipo: 'uso_pendiente', usos: USOS_LENOSOS, pendiente_min: 10, usos_siempre: USOS_HERBACEOS },
+                    preguntas: [
+                        { id: 'bcam6_cobertura', texto: '¿Existe cobertura vegetal (sembrada, espontánea o inerte) en el período sensible?', tipo: 'si_no_np' },
+                        { 
+                            id: 'bcam6_herbaceo_excepcion', 
+                            texto: 'En herbáceos de invierno con rastrojo: ¿se han realizado labores poco profundas entre recolección y el 1 de septiembre?', 
+                            tipo: 'si_no_np',
+                            condicion_uso: 'herbaceo'
+                        },
+                        { 
+                            id: 'bcam6_barbecho_excepcion', 
+                            texto: 'En barbecho: ¿se han aplicado tratamientos agrícolas (enmiendas orgánicas/purines) entre abril y junio?', 
+                            tipo: 'si_no_np',
+                            condicion_uso: 'herbaceo'
+                        },
+                        { 
+                            id: 'bcam6_lenoso_excepcion', 
+                            texto: 'En leñosos con pendiente > 10%: ¿se ha utilizado cubierta inerte además de vegetal?', 
+                            tipo: 'si_no_np',
+                            condicion_uso: 'lenoso'
+                        }
+                    ]
+                },
+                {
+                    titulo: 'BCAM 7 — Rotación / Diversificación de cultivos',
+                    regla: { tipo: 'uso', valores: USOS_HERBACEOS },
+                    preguntas: [
+                        { 
+                            id: 'bcam7_practica', 
+                            texto: '¿Qué práctica aplica para cumplir la BCAM 7?', 
+                            tipo: 'seleccion', 
+                            opciones: [
+                                'Rotación de cultivos (rotar 1/3 anualmente + cambio cada 3 años)',
+                                'Diversificación anual de cultivos',
+                                'Exento (explotación ≤ 30 ha)'
+                            ]
+                        },
+                        { 
+                            id: 'bcam7_rotacion_1_3', 
+                            texto: 'Si rotación: ¿se ha rotado al menos el 33% de la superficie de tierras de cultivo respecto al año anterior?', 
+                            tipo: 'si_no_np', 
+                            condicion: 'bcam7_practica',
+                            condicion_valor: 'Rotación de cultivos (rotar 1/3 anualmente + cambio cada 3 años)'
+                        },
+                        { 
+                            id: 'bcam7_rotacion_3_anios', 
+                            texto: 'Si rotación: ¿todas las parcelas han cambiado de cultivo al menos una vez cada 3 años?', 
+                            tipo: 'si_no_np', 
+                            condicion: 'bcam7_practica',
+                            condicion_valor: 'Rotación de cultivos (rotar 1/3 anualmente + cambio cada 3 años)'
+                        },
+                        { 
+                            id: 'bcam7_diversificacion', 
+                            texto: 'Si diversificación: ¿se cumplen los mínimos de cultivos según superficie (2 cultivos entre 10-30 ha; 3 cultivos > 30 ha)?', 
+                            tipo: 'si_no_np', 
+                            condicion: 'bcam7_practica',
+                            condicion_valor: 'Diversificación anual de cultivos'
+                        }
+                    ]
+                },
+                {
+                    titulo: 'BCAM 8 — Elementos del paisaje',
+                    regla: { tipo: 'uso', valores: [...USOS_HERBACEOS, ...USOS_LENOSOS, ...USOS_PASTO] },
+                    preguntas: [
+                        { id: 'bcam8_elementos', texto: '¿Se conservan los elementos del paisaje (setos, árboles, muros, charcas) presentes en la parcela?', tipo: 'si_no_np' },
+                        { id: 'bcam8_tala', texto: '¿Se ha realizado tala de setos o árboles durante la temporada de cría de aves?', tipo: 'si_no_np', invertir: true }
+                    ]
+                },
+                {
+                    titulo: 'RLG 1 y 2 — Aguas y nitratos',
+                    regla: { tipo: 'uso', valores: [...USOS_HERBACEOS, ...USOS_LENOSOS] },
+                    preguntas: [
+                        { id: 'rlg12_zona', texto: '¿La parcela está en zona vulnerable a nitratos?', tipo: 'si_no_np' },
+                        { id: 'rlg12_plan', texto: 'Si zona vulnerable, ¿se aplica el programa de actuación vigente?', tipo: 'si_no_np', condicion: 'rlg12_zona', condicion_valor: 'Sí' }
+                    ]
+                },
+                {
+                    titulo: 'RLG 7 y 8 — Fitosanitarios',
+                    regla: { tipo: 'uso', valores: [...USOS_HERBACEOS, ...USOS_LENOSOS] },
+                    preguntas: [
+                        { id: 'rlg78_carnet', texto: '¿El aplicador dispone de carné de aplicador de fitosanitarios vigente?', tipo: 'si_no_np' },
+                        { id: 'rlg78_registro', texto: '¿Se lleva registro de tratamientos fitosanitarios actualizado?', tipo: 'si_no_np' }
+                    ]
+                },
+                {
+                    titulo: 'Observaciones generales',
+                    regla: { tipo: 'siempre' },
+                    preguntas: [
+                        { id: 'observaciones_cond', texto: 'Observaciones adicionales de la visita de condicionalidad:', tipo: 'texto_libre' }
+                    ]
+                }
+            ]
+        },
+        admisibilidad: {
+            titulo: 'Cuestionario de Admisibilidad (RD 1047/2022)',
+            secciones: [
+                {
+                    titulo: 'Verificación de uso y superficie',
+                    regla: { tipo: 'siempre' },
+                    preguntas: [
+                        { id: 'adm_uso_coincide', texto: '¿El uso SIGPAC declarado coincide con el uso real observado en campo?', tipo: 'si_no' },
+                        { id: 'adm_superficie_coincide', texto: '¿La superficie medida en campo coincide con la superficie declarada (tolerancia ±5%)?', tipo: 'si_no' },
+                        { id: 'adm_superficie_medida', texto: 'Superficie medida en campo (ha):', tipo: 'numero' }
+                    ]
+                },
+                {
+                    titulo: 'Elementos no admisibles',
+                    regla: { tipo: 'siempre' },
+                    preguntas: [
+                        { id: 'adm_edificaciones', texto: '¿Existen edificaciones, naves o construcciones no declaradas dentro del recinto?', tipo: 'si_no', invertir: true },
+                        { id: 'adm_caminos', texto: '¿Hay caminos, rodadas o superficies no productivas que reduzcan la superficie admisible?', tipo: 'si_no', invertir: true },
+                        { id: 'adm_improductivos', texto: '¿Existen zonas improductivas (afloramientos rocosos, agua, etc.) no descontadas?', tipo: 'si_no', invertir: true }
+                    ]
+                },
+                {
+                    titulo: 'Linderos y geometría',
+                    regla: { tipo: 'siempre' },
+                    preguntas: [
+                        { id: 'adm_linderos', texto: '¿Los linderos de la parcela coinciden con la geometría SIGPAC?', tipo: 'si_no' },
+                        { id: 'adm_desplazamiento', texto: '¿Se detecta desplazamiento o roturación de linderos?', tipo: 'si_no', invertir: true }
+                    ]
+                },
+                {
+                    titulo: 'Incidencias y observaciones',
+                    regla: { tipo: 'siempre' },
+                    preguntas: [
+                        { id: 'adm_incidencias', texto: '¿Se han detectado incidencias no recogidas en los apartados anteriores?', tipo: 'si_no', invertir: true },
+                        { id: 'adm_incidencias_desc', texto: 'Descripción de incidencias detectadas:', tipo: 'texto_libre', condicion: 'adm_incidencias', condicion_valor: 'Sí' },
+                        { id: 'observaciones_adm', texto: 'Observaciones adicionales de la visita de admisibilidad:', tipo: 'texto_libre' }
+                    ]
+                }
+            ]
+        }
+    };
+
+    // ============================================================
+    // MOTOR DE REGLAS
+    // ============================================================
+    function evaluarRegla(regla, datos) {
+        if (!regla) return true;
+        const uso = datos.uso_sigpac ? String(datos.uso_sigpac).toUpperCase().trim() : null;
+        const pendiente = datos.pendiente_media !== null && datos.pendiente_media !== undefined 
+            ? parseFloat(datos.pendiente_media) : null;
+
+        switch (regla.tipo) {
+            case 'siempre':
+                return true;
+            case 'uso':
+                if (!uso) return false;
+                return regla.valores.includes(uso);
+            case 'pendiente_umbral':
+                if (pendiente === null) return false;
+                return pendiente >= regla.umbral;
+            case 'uso_pendiente':
+                if (!uso) return false;
+                if (regla.usos_siempre && regla.usos_siempre.includes(uso)) return true;
+                if (regla.usos && regla.usos.includes(uso)) {
+                    if (pendiente === null) return false;
+                    return pendiente >= regla.pendiente_min;
+                }
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    // ============================================================
+    // INDEXEDDB
+    // ============================================================
+    function abrirDB() {
+        return new Promise((resolve, reject) => {
+            if (db) { resolve(db); return; }
+            const request = indexedDB.open('PAC_Campo_DB', 1);
+            request.onupgradeneeded = (e) => {
+                const d = e.target.result;
+                if (!d.objectStoreNames.contains('visitas')) {
+                    const store = d.createObjectStore('visitas', { keyPath: 'id', autoIncrement: true });
+                    store.createIndex('tipo', 'tipo', { unique: false });
+                    store.createIndex('completado', 'completado', { unique: false });
+                    store.createIndex('fecha_hora', 'fecha_hora', { unique: false });
+                }
+            };
+            request.onsuccess = (e) => { db = e.target.result; resolve(db); };
+            request.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    async function guardarVisita(visita) {
+        const d = await abrirDB();
+        return new Promise((resolve, reject) => {
+            const tx = d.transaction('visitas', 'readwrite');
+            const store = tx.objectStore('visitas');
+            const req = store.put(visita);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    async function obtenerVisitas() {
+        const d = await abrirDB();
+        return new Promise((resolve, reject) => {
+            const tx = d.transaction('visitas', 'readonly');
+            const store = tx.objectStore('visitas');
+            const req = store.getAll();
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    async function eliminarVisita(id) {
+        const d = await abrirDB();
+        return new Promise((resolve, reject) => {
+            const tx = d.transaction('visitas', 'readwrite');
+            const store = tx.objectStore('visitas');
+            const req = store.delete(id);
+            req.onsuccess = () => resolve();
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    // ============================================================
+    // MÓDULO DE CAMPO
+    // ============================================================
+    document.getElementById('btnTomarDatosCampo').addEventListener('click', function() {
+        const botones = document.getElementById('campoBotones');
+        botones.style.display = botones.style.display === 'grid' ? 'none' : 'grid';
+    });
+
+    document.getElementById('btnCondicionalidad').addEventListener('click', function() {
+        abrirCuestionario('condicionalidad', null);
+    });
+
+    document.getElementById('btnAdmisibilidad').addEventListener('click', function() {
+        abrirCuestionario('admisibilidad', null);
+    });
+
+    function abrirCuestionario(tipo, visitaExistente) {
+        tipoVisitaActual = tipo;
+        borradorEnEdicion = visitaExistente ? visitaExistente.id : null;
+
+        const config = CUESTIONARIOS[tipo];
+        const overlay = document.getElementById('modalCampoOverlay');
+        const titulo = document.getElementById('modalCampoTitulo');
+        const infoParcela = document.getElementById('modalCampoParcelaInfo');
+        const container = document.getElementById('preguntasContainer');
+        const infoFiltrado = document.getElementById('infoFiltrado');
+
+        titulo.textContent = config.titulo;
+        
+        const p = parametrosActuales;
+        const provTraducida = LISTAS_SIGPAC.provincias.length > 0 
+            ? traducirCodigo(LISTAS_SIGPAC.provincias, p.pr) : p.pr;
+        const munTraducido = LISTAS_SIGPAC.municipios.length > 0 
+            ? traducirCodigo(LISTAS_SIGPAC.municipios, p.mu) : p.mu;
+        const usoTraducido = LISTAS_SIGPAC.usos.length > 0 
+            ? traducirCodigo(LISTAS_SIGPAC.usos, datosParcelaActual.uso_sigpac) : (datosParcelaActual.uso_sigpac || 'N/C');
+        const pend = datosParcelaActual.pendiente_media !== null && datosParcelaActual.pendiente_media !== undefined
+            ? datosParcelaActual.pendiente_media : 'N/C';
+        
+        infoParcela.textContent = `Provincia: ${provTraducida} | Municipio: ${munTraducido} | ` +
+            `Recinto: ${p.pr}/${p.mu}/${p.ag}/${p.zo}/${p.po}/${p.pa}/${p.re} | ` +
+            `Uso: ${usoTraducido} | Pendiente: ${pend}%` +
+            (datosParcelaActual.superficie ? ` | Superficie: ${datosParcelaActual.superficie} ha` : '');
+
+        const seccionesAplicables = config.secciones.filter(sec => evaluarRegla(sec.regla, datosParcelaActual));
+        const seccionesOcultas = config.secciones.filter(sec => !evaluarRegla(sec.regla, datosParcelaActual));
+
+        if (seccionesOcultas.length > 0) {
+            infoFiltrado.style.display = 'block';
+            infoFiltrado.innerHTML = `<strong>ℹ Secciones omitidas por uso/pendiente:</strong> ` +
+                seccionesOcultas.map(s => s.titulo.split('—')[0].trim()).join(', ');
+        } else {
+            infoFiltrado.style.display = 'none';
+        }
+
+        container.innerHTML = '';
+        if (seccionesAplicables.length === 0) {
+            container.innerHTML = '<p style="color:#c62828;">No hay preguntas aplicables para este uso y pendiente.</p>';
+        }
+
+        seccionesAplicables.forEach((seccion) => {
+            const h3 = document.createElement('h3');
+            h3.textContent = seccion.titulo;
+            container.appendChild(h3);
+
+            seccion.preguntas.forEach(preg => {
+                const div = document.createElement('div');
+                div.className = 'pregunta-campo';
+                div.id = 'preg_' + preg.id;
+
+                const label = document.createElement('label');
+                label.textContent = preg.texto;
+                label.setAttribute('for', 'input_' + preg.id);
+                div.appendChild(label);
+
+                if (preg.tipo === 'si_no' || preg.tipo === 'si_no_np') {
+                    const opciones = document.createElement('div');
+                    opciones.className = 'opciones';
+                    const valores = preg.tipo === 'si_no' ? ['Sí', 'No'] : ['Sí', 'No', 'No procede'];
+                    valores.forEach(v => {
+                        const lbl = document.createElement('label');
+                        const radio = document.createElement('input');
+                        radio.type = 'radio';
+                        radio.name = preg.id;
+                        radio.value = v;
+                        lbl.appendChild(radio);
+                        lbl.appendChild(document.createTextNode(' ' + v));
+                        opciones.appendChild(lbl);
+                    });
+                    div.appendChild(opciones);
+                } else if (preg.tipo === 'numero') {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.step = '0.01';
+                    input.name = preg.id;
+                    input.id = 'input_' + preg.id;
+                    input.placeholder = 'Introduce valor numérico';
+                    div.appendChild(input);
+                } else if (preg.tipo === 'texto_libre') {
+                    const textarea = document.createElement('textarea');
+                    textarea.name = preg.id;
+                    textarea.id = 'input_' + preg.id;
+                    textarea.placeholder = 'Escribe aquí...';
+                    div.appendChild(textarea);
+                } else if (preg.tipo === 'seleccion') {
+                    const select = document.createElement('select');
+                    select.name = preg.id;
+                    select.id = 'input_' + preg.id;
+                    
+                    const optVacia = document.createElement('option');
+                    optVacia.value = '';
+                    optVacia.textContent = '-- Seleccione --';
+                    select.appendChild(optVacia);
+                    
+                    preg.opciones.forEach(op => {
+                        const opt = document.createElement('option');
+                        opt.value = op;
+                        opt.textContent = op;
+                        select.appendChild(opt);
+                    });
+                    
+                    select.addEventListener('change', function() {
+                        const name = this.name;
+                        const valor = this.value;
+                        document.querySelectorAll(`[data-condicion="${name}"]`).forEach(el => {
+                            const valorEsperado = el.dataset.condicionValor;
+                            const mostrar = valorEsperado ? (valor === valorEsperado) : (valor !== '' && valor !== 'No');
+                            el.style.display = mostrar ? 'block' : 'none';
+                            if (!mostrar) {
+                                const inputs = el.querySelectorAll('input, textarea, select');
+                                inputs.forEach(inp => { 
+                                    if (inp.type === 'radio') inp.checked = false; 
+                                    else inp.value = ''; 
+                                });
+                            }
+                        });
+                    });
+                    
+                    div.appendChild(select);
+                }
+
+                if (preg.condicion) {
+                    div.style.display = 'none';
+                    div.dataset.condicion = preg.condicion;
+                    div.dataset.condicionValor = preg.condicion_valor || 'Sí';
+                }
+
+                if (preg.condicion_uso) {
+                    const usoActual = datosParcelaActual.uso_sigpac ? String(datosParcelaActual.uso_sigpac).toUpperCase() : '';
+                    const esHerbaceo = USOS_HERBACEOS.includes(usoActual);
+                    const esLenoso = USOS_LENOSOS.includes(usoActual);
+                    if ((preg.condicion_uso === 'herbaceo' && !esHerbaceo) || 
+                        (preg.condicion_uso === 'lenoso' && !esLenoso)) {
+                        div.style.display = 'none';
+                        div.dataset.ocultaPorUso = 'true';
+                    }
+                }
+
+                container.appendChild(div);
+            });
+        });
+
+        const bloqueIncidencias = document.createElement('div');
+        bloqueIncidencias.className = 'bloque-catalogacion';
+        bloqueIncidencias.innerHTML = `
+            <h3>📋 Catalogación de Incidencias (SIGPAC)</h3>
+            <div class="pregunta-campo">
+                <label>Buscar incidencia (por código o texto):</label>
+                <div class="buscador-incidencias">
+                    <input type="text" id="buscadorIncidencias" placeholder="Ej: 116 o 'paisaje'..." autocomplete="off">
+                    <span class="contador" id="contadorIncidencias"></span>
+                </div>
+                <div class="sin-coincidencias" id="sinCoincidenciasInc">No se encontraron incidencias con ese criterio.</div>
+                <label style="margin-top:10px;">Seleccione las incidencias observadas (se guardarán separadas por comas):</label>
+                <select id="selectIncidencias" multiple size="8" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                    ${LISTAS_SIGPAC.incidencias.map(inc => 
+                        `<option value="${inc.codigo}" data-texto="${(inc.codigo + ' ' + inc.descripcion).toLowerCase()}">${inc.codigo} - ${inc.descripcion}</option>`
+                    ).join('')}
+                </select>
+                <small style="color:#666; display:block; margin-top:4px;">Mantenga pulsado Ctrl (o Cmd) para seleccionar varias.</small>
+            </div>
+        `;
+        container.appendChild(bloqueIncidencias);
+
+        configurarBuscadorIncidencias();
+
+        if (tipo === 'condicionalidad') {
+            const bloqueEPP = document.createElement('div');
+            bloqueEPP.className = 'bloque-catalogacion';
+            bloqueEPP.innerHTML = `
+                <h3>🌳 Elementos del Paisaje (BCAM 8)</h3>
+                <div class="pregunta-campo">
+                    <label>Elementos de tipo ÁREA observados:</label>
+                    <select id="selectEppArea" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                        <option value="">-- Ninguno --</option>
+                        ${LISTAS_SIGPAC.epp_area.map(e => 
+                            `<option value="${e.codigo}">${e.codigo} - ${e.descripcion}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="pregunta-campo">
+                    <label>Elementos de tipo LÍNEA observados:</label>
+                    <select id="selectEppLinea" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                        <option value="">-- Ninguno --</option>
+                        ${EPP_LINEA_FIJA.map(e => 
+                            `<option value="${e.codigo}">${e.codigo} - ${e.descripcion}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="pregunta-campo">
+                    <label>Elementos de tipo PUNTO observados:</label>
+                    <select id="selectEppPunto" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                        <option value="">-- Ninguno --</option>
+                        ${EPP_PUNTO_FIJA.map(e => 
+                            `<option value="${e.codigo}">${e.codigo} - ${e.descripcion}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+            `;
+            container.appendChild(bloqueEPP);
+        }
+
+        if (visitaExistente && visitaExistente.respuestas) {
+            Object.entries(visitaExistente.respuestas).forEach(([key, val]) => {
+                const radios = document.querySelectorAll(`input[name="${key}"]`);
+                radios.forEach(r => { if (r.value === val) r.checked = true; });
+                const input = document.getElementById('input_' + key);
+                if (input && input.type !== 'radio') input.value = val;
+            });
+            document.querySelectorAll('#preguntasContainer input[type="radio"]:checked').forEach(r => {
+                r.dispatchEvent(new Event('change'));
+            });
+            document.querySelectorAll('#preguntasContainer select').forEach(s => {
+                if (s.value) s.dispatchEvent(new Event('change'));
+            });
+            
+            if (visitaExistente.respuestas.incidencias_campo) {
+                const codigos = visitaExistente.respuestas.incidencias_campo.split(',');
+                const selectInc = document.getElementById('selectIncidencias');
+                if (selectInc) {
+                    Array.from(selectInc.options).forEach(opt => {
+                        if (codigos.includes(opt.value)) opt.selected = true;
+                    });
+                }
+            }
+            if (visitaExistente.respuestas.epp_area) {
+                const sel = document.getElementById('selectEppArea');
+                if (sel) sel.value = visitaExistente.respuestas.epp_area;
+            }
+            if (visitaExistente.respuestas.epp_linea) {
+                const sel = document.getElementById('selectEppLinea');
+                if (sel) sel.value = visitaExistente.respuestas.epp_linea;
+            }
+            if (visitaExistente.respuestas.epp_punto) {
+                const sel = document.getElementById('selectEppPunto');
+                if (sel) sel.value = visitaExistente.respuestas.epp_punto;
+            }
+        }
+
+        configurarCondicionalidad();
+        overlay.classList.add('activo');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function configurarBuscadorIncidencias() {
+        const input = document.getElementById('buscadorIncidencias');
+        const select = document.getElementById('selectIncidencias');
+        const contador = document.getElementById('contadorIncidencias');
+        const sinCoinc = document.getElementById('sinCoincidenciasInc');
+        if (!input || !select) return;
+
+        const opcionesOriginales = Array.from(select.options).map(opt => ({
+            value: opt.value,
+            texto: opt.textContent,
+            dataTexto: opt.dataset.texto,
+            selected: opt.selected
+        }));
+
+        function filtrar(filtro) {
+            select.innerHTML = '';
+            opcionesOriginales.forEach(o => {
+                const opt = document.createElement('option');
+                opt.value = o.value;
+                opt.textContent = o.texto;
+                opt.dataset.texto = o.dataTexto;
+                opt.selected = o.selected;
+                select.appendChild(opt);
+            });
+
+            if (!filtro) {
+                contador.textContent = '';
+                sinCoinc.style.display = 'none';
+                return;
+            }
+
+            let regex = null;
+            try {
+                regex = new RegExp(filtro, 'i');
+            } catch (e) {
+                contador.textContent = '';
+                sinCoinc.style.display = 'none';
+                return;
+            }
+
+            const opciones = Array.from(select.options);
+            let coincidencias = 0;
+            let primeraCoincidencia = null;
+
+            opciones.forEach(opt => {
+                const coincide = regex.test(opt.dataset.texto);
+                opt.style.display = coincide ? '' : 'none';
+                if (coincide) {
+                    coincidencias++;
+                    if (!primeraCoincidencia) primeraCoincidencia = opt;
+                }
+            });
+
+            contador.textContent = coincidencias > 0 ? `${coincidencias} coincidencia(s)` : '';
+            sinCoinc.style.display = coincidencias === 0 ? 'block' : 'none';
+
+            if (primeraCoincidencia) {
+                select.selectedIndex = Array.from(select.options).indexOf(primeraCoincidencia);
+                const optionTop = primeraCoincidencia.offsetTop;
+                const optionHeight = primeraCoincidencia.offsetHeight;
+                const selectScrollTop = select.scrollTop;
+                const selectHeight = select.clientHeight;
+                if (optionTop < selectScrollTop) {
+                    select.scrollTop = optionTop;
+                } else if (optionTop + optionHeight > selectScrollTop + selectHeight) {
+                    select.scrollTop = optionTop + optionHeight - selectHeight;
+                }
+                select.focus();
+            }
+        }
+
+        input.addEventListener('input', () => filtrar(input.value.trim()));
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                filtrar(input.value.trim());
+            }
+        });
+    }
+
+    function configurarCondicionalidad() {
+        const radios = document.querySelectorAll('#preguntasContainer input[type="radio"]');
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const name = this.name;
+                const valor = this.value;
+                document.querySelectorAll(`[data-condicion="${name}"]`).forEach(el => {
+                    const valorEsperado = el.dataset.condicionValor || 'Sí';
+                    const mostrar = (valor === valorEsperado);
+                    el.style.display = mostrar ? 'block' : 'none';
+                    if (!mostrar) {
+                        const inputs = el.querySelectorAll('input, textarea, select');
+                        inputs.forEach(inp => { if (inp.type === 'radio') inp.checked = false; else inp.value = ''; });
+                    }
+                });
+            });
+        });
+    }
+
+    function recogerRespuestas() {
+        const respuestas = {};
+        document.querySelectorAll('#preguntasContainer .pregunta-campo').forEach(div => {
+            if (div.style.display === 'none' || div.dataset.ocultaPorUso === 'true') return;
+            const radios = div.querySelectorAll('input[type="radio"]:checked');
+            if (radios.length > 0) {
+                respuestas[radios[0].name] = radios[0].value;
+            } else {
+                const input = div.querySelector('input[type="number"], textarea, select');
+                if (input && input.value.trim()) respuestas[input.name] = input.value.trim();
+            }
+        });
+        
+        const selectInc = document.getElementById('selectIncidencias');
+        if (selectInc) {
+            const seleccionadas = Array.from(selectInc.selectedOptions).map(o => o.value);
+            if (seleccionadas.length > 0) {
+                respuestas['incidencias_campo'] = seleccionadas.join(',');
+            }
+        }
+        
+        const selectArea = document.getElementById('selectEppArea');
+        if (selectArea && selectArea.value) respuestas['epp_area'] = selectArea.value;
+        const selectLinea = document.getElementById('selectEppLinea');
+        if (selectLinea && selectLinea.value) respuestas['epp_linea'] = selectLinea.value;
+        const selectPunto = document.getElementById('selectEppPunto');
+        if (selectPunto && selectPunto.value) respuestas['epp_punto'] = selectPunto.value;
+        
+        return respuestas;
+    }
+
+    async function grabarVisita(completado) {
+        const respuestas = recogerRespuestas();
+        
+        if (completado) {
+            const totalPreguntas = document.querySelectorAll('#preguntasContainer .pregunta-campo').length;
+            const respondidas = Object.keys(respuestas).length;
+            if (respondidas < Math.ceil(totalPreguntas * 0.5)) {
+                if (!confirm('Apenas has respondido preguntas. ¿Deseas grabar de todos modos como borrador incompleto?')) return;
+                completado = false;
+            }
+        }
+
+        const ahora = new Date();
+        const visita = {
+            tipo: tipoVisitaActual,
+            fecha_hora: ahora.toISOString(),
+            fecha_hora_legible: ahora.toLocaleString('es-ES'),
+            parametros: { ...parametrosActuales },
+            datos_parcela: datosParcelaActual ? { ...datosParcelaActual } : {},
+            respuestas: respuestas,
+            completado: completado
+        };
+
+        if (borradorEnEdicion) visita.id = borradorEnEdicion;
+
+        try {
+            await guardarVisita(visita);
+            alert(completado ? '✅ Visita grabada correctamente.' : '💾 Borrador guardado. Podrás retomarlo más tarde.');
+            cerrarModal();
+            cargarListadoVisitas();
+        } catch (err) {
+            alert('Error al guardar: ' + err.message);
+        }
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalCampoOverlay').classList.remove('activo');
+        document.body.style.overflow = '';
+        tipoVisitaActual = null;
+        borradorEnEdicion = null;
+    }
+
+    document.getElementById('formCampo').addEventListener('submit', function(e) {
+        e.preventDefault();
+        grabarVisita(true);
+    });
+
+    document.getElementById('btnGuardarBorrador').addEventListener('click', function() {
+        grabarVisita(false);
+    });
+
+    document.getElementById('btnCancelarCampo').addEventListener('click', function() {
+        if (confirm('¿Descartar los cambios no guardados?')) cerrarModal();
+    });
+
+    document.getElementById('modalCampoOverlay').addEventListener('click', function(e) {
+        if (e.target === this) {
+            if (confirm('¿Cerrar el cuestionario? Los cambios no guardados se perderán.')) cerrarModal();
+        }
+    });
+
+    // ============================================================
+    // LISTADO DE VISITAS
+    // ============================================================
+    async function cargarListadoVisitas() {
+        try {
+            const visitas = await obtenerVisitas();
+            const tbody = document.getElementById('tbodyVisitas');
+            const container = document.getElementById('listadoVisitas');
+            
+            if (visitas.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
+            tbody.innerHTML = '';
+            visitas.sort((a, b) => new Date(b.fecha_hora) - new Date(a.fecha_hora));
+
+            visitas.forEach(v => {
+                const tr = document.createElement('tr');
+                const badgeTipo = v.tipo === 'condicionalidad' 
+                    ? '<span class="badge-tipo badge-cond">Condicionalidad</span>'
+                    : '<span class="badge-tipo badge-admi">Admisibilidad</span>';
+                const badgeEstado = v.completado 
+                    ? '✅ Completa' 
+                    : '<span class="badge-tipo badge-borrador">Borrador</span>';
+                const parcela = `${v.parametros.pr}/${v.parametros.mu}/${v.parametros.ag}/${v.parametros.zo}/${v.parametros.po}/${v.parametros.pa}/${v.parametros.re}`;
+
+                tr.innerHTML = `
+                    <td>${v.fecha_hora_legible || v.fecha_hora}</td>
+                    <td>${badgeTipo}</td>
+                    <td>${parcela}</td>
+                    <td>${badgeEstado}</td>
+                    <td>
+                        <button class="btn-mini" style="background:#1565c0;color:white;" onclick="retomarVisita(${v.id})">Retomar</button>
+                        <button class="btn-mini" style="background:#c62828;color:white;margin-left:5px;" onclick="borrarVisita(${v.id})">Borrar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (err) {
+            console.error('Error cargando visitas:', err);
+        }
+    }
+
+    window.retomarVisita = async function(id) {
+        const visitas = await obtenerVisitas();
+        const visita = visitas.find(v => v.id === id);
+        if (!visita) return;
+        parametrosActuales = { ...visita.parametros };
+        datosParcelaActual = { ...visita.datos_parcela };
+        abrirCuestionario(visita.tipo, visita);
+    };
+
+    window.borrarVisita = async function(id) {
+        if (!confirm('¿Eliminar esta visita permanentemente?')) return;
+        await eliminarVisita(id);
+        cargarListadoVisitas();
+    };
+
+    // ============================================================
+    // EXPORTAR CSV
+    // ============================================================
+    document.getElementById('btnExportarCSV').addEventListener('click', async function() {
+        const visitas = await obtenerVisitas();
+        if (visitas.length === 0) {
+            alert('No hay visitas guardadas para exportar.');
+            return;
+        }
+
+        const todasLasClaves = new Set();
+        visitas.forEach(v => {
+            if (v.respuestas) Object.keys(v.respuestas).forEach(k => todasLasClaves.add(k));
+        });
+
+        const columnasFijas = [
+            'id', 'fecha_hora', 'tipo', 'completado',
+            'provincia', 'municipio', 'agregado', 'zona', 'poligono', 'parcela', 'recinto',
+            'superficie', 'pendiente_media', 'coef_regadio', 'admisibilidad', 'incidencias', 'uso_sigpac'
+        ];
+        const columnasPreguntas = Array.from(todasLasClaves).sort();
+        const cabecera = [...columnasFijas, ...columnasPreguntas];
+
+        const escaparCSV = (val) => {
+            if (val === undefined || val === null) return '';
+            const s = String(val).replace(/"/g, '""');
+            return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+        };
+
+        const lineas = [cabecera.map(escaparCSV).join(',')];
+
+        visitas.forEach(v => {
+            const p = v.parametros || {};
+            const d = v.datos_parcela || {};
+            const fila = [
+                v.id, v.fecha_hora_legible || v.fecha_hora, v.tipo, v.completado ? 'Sí' : 'No',
+                p.pr, p.mu, p.ag, p.zo, p.po, p.pa, p.re,
+                d.superficie, d.pendiente_media, d.coef_regadio, d.admisibilidad, d.incidencias, d.uso_sigpac
+            ];
+            columnasPreguntas.forEach(col => {
+                fila.push(v.respuestas && v.respuestas[col] !== undefined ? v.respuestas[col] : '');
+            });
+            lineas.push(fila.map(escaparCSV).join(','));
+        });
+
+        const BOM = '\uFEFF';
+        const csvContent = BOM + lineas.join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `visitas_PAC_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    // ============================================================
+    // INICIALIZACIÓN
+    // ============================================================
+    async function init() {
+        await abrirDB().catch(err => console.error('IndexedDB no disponible:', err));
+        await inicializarListasSigpac();
+        await configurarSelectores();
+        cargarListadoVisitas();
+    }
+
+    init();
 </script>
 
 </body>
